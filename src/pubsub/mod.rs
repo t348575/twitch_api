@@ -104,6 +104,8 @@ pub mod raid;
 pub mod user_moderation_notifications;
 #[cfg(feature = "unsupported")]
 pub mod video_playback;
+#[cfg(feature = "unsupported")]
+pub mod predictions;
 
 use crate::parse_json;
 
@@ -172,6 +174,9 @@ pub enum Topics {
     Raid(raid::Raid),
     /// A user’s message held by AutoMod has been approved or denied.
     UserModerationNotifications(user_moderation_notifications::UserModerationNotifications),
+    /// Channel predictions
+    #[cfg(feature = "unsupported")]
+    PredictionsChannelV1(predictions::PredictionsChannelV1),
 }
 
 impl std::fmt::Display for Topics {
@@ -203,6 +208,8 @@ impl std::fmt::Display for Topics {
             #[cfg(feature = "unsupported")]
             Raid(t) => t.to_string(),
             UserModerationNotifications(t) => t.to_string(),
+            #[cfg(feature = "unsupported")]
+            PredictionsChannelV1(t) => t.to_string(),
         };
         f.write_str(&s)
     }
@@ -480,6 +487,13 @@ pub enum TopicData {
         #[serde(rename = "message")]
         reply: Box<user_moderation_notifications::UserModerationNotificationsReply>,
     },
+    PredictionsChannelV1 {
+        /// Topic message
+        topic: predictions::PredictionsChannelV1,
+        /// Message reply from topic subscription
+        #[serde(rename = "message")]
+        reply: Box<predictions::PredictionsChannelV1Reply>,
+    }
 }
 
 // This impl is here because otherwise we hide the errors from deser
@@ -569,6 +583,11 @@ impl<'de> serde::Deserialize<'de> for TopicData {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "unsupported")]
+            Topics::PredictionsChannelV1(topic) => TopicData::PredictionsChannelV1 {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            }
         })
     }
 }
