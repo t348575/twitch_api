@@ -31,7 +31,7 @@ twitch_api = { version = "0.7.0-rc.6", path = "." }
 twitch_oauth2 = { version = "0.12.4", path = "twitch_oauth2/" }
 twitch_types = { version = "0.4.2", features = [
     "serde",
-], path = "./twitch_types" }
+] }
 
 [dependencies]
 thiserror = "1.0.40"
