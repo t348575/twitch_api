@@ -486,6 +486,7 @@ pub enum TopicData {
         #[serde(rename = "message")]
         reply: Box<user_moderation_notifications::UserModerationNotificationsReply>,
     },
+    /// Channel predictions
     PredictionsChannelV1 {
         /// Topic message
         topic: predictions::PredictionsChannelV1,
