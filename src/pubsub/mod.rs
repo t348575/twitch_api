@@ -177,6 +177,9 @@ pub enum Topics {
     /// Channel predictions
     #[cfg(feature = "unsupported")]
     PredictionsChannelV1(predictions::PredictionsChannelV1),
+    /// A user is awarded channel points
+    #[cfg(feature = "unsupported")]
+    CommunityPointsUserV1(community_points::CommunityPointsUserV1),
 }
 
 impl std::fmt::Display for Topics {
@@ -210,6 +213,7 @@ impl std::fmt::Display for Topics {
             UserModerationNotifications(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             PredictionsChannelV1(t) => t.to_string(),
+            CommunityPointsUserV1(t) => t.to_string(),
         };
         f.write_str(&s)
     }
@@ -488,12 +492,22 @@ pub enum TopicData {
         reply: Box<user_moderation_notifications::UserModerationNotificationsReply>,
     },
     /// Channel predictions
+    #[cfg(feature = "unsupported")]
     PredictionsChannelV1 {
         /// Topic message
         topic: predictions::PredictionsChannelV1,
         /// Message reply from topic subscription
         #[serde(rename = "message")]
         reply: Box<predictions::PredictionsChannelV1Reply>,
+    },
+    /// A user is awarded channel points
+    #[cfg(feature = "unsupported")]
+    CommunityPointsUserV1 {
+        /// Topic message
+        topic: community_points::CommunityPointsUserV1,
+        /// Message reply from topic subscription
+        #[serde(rename = "message")]
+        reply: Box<community_points::CommunityPointsUserV1Reply>,
     }
 }
 
@@ -586,6 +600,11 @@ impl<'de> serde::Deserialize<'de> for TopicData {
             },
             #[cfg(feature = "unsupported")]
             Topics::PredictionsChannelV1(topic) => TopicData::PredictionsChannelV1 {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            #[cfg(feature = "unsupported")]
+            Topics::CommunityPointsUserV1(topic) => TopicData::CommunityPointsUserV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             }
