@@ -1,7 +1,7 @@
 #![doc(alias = "prediction")]
 #![doc(alias = "predictions-channel-v1")]
 //! PubSub messages for predictions
-use crate::{pubsub, types};
+use crate::{pubsub, types::Timestamp};
 use serde::{Deserialize, Serialize};
 
 /// A user redeems an reward using channel points.
@@ -43,7 +43,7 @@ pub struct PredictionsChannelV1Reply {
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
 pub struct Data {
     /// Event timestamp
-    pub timestamp: types::Timestamp,
+    pub timestamp: Timestamp,
     /// Event
     pub event: Event,
 }
@@ -61,19 +61,19 @@ pub struct Event {
     pub channel_id: String,
     /// Created at
     #[serde(rename = "created_at")]
-    pub created_at: types::Timestamp,
+    pub created_at: Timestamp,
     /// Created by
     #[serde(rename = "created_by")]
     pub created_by: ByUser,
     /// Ended at
     #[serde(rename = "ended_at")]
-    pub ended_at: Option<types::Timestamp>,
+    pub ended_at: Option<Timestamp>,
     /// Ended by user
     #[serde(rename = "ended_by")]
     pub ended_by: Option<ByUser>,
     /// Locked at
     #[serde(rename = "locked_at")]
-    pub locked_at: Option<types::Timestamp>,
+    pub locked_at: Option<Timestamp>,
     /// Outcomes
     pub outcomes: Vec<Outcome>,
     /// Prediction window in seconds
@@ -151,10 +151,10 @@ pub struct TopPredictor {
     pub points: i64,
     /// Predicted at
     #[serde(rename = "predicted_at")]
-    pub predicted_at: types::Timestamp,
+    pub predicted_at: Timestamp,
     /// Updated at
     #[serde(rename = "updated_at")]
-    pub updated_at: types::Timestamp,
+    pub updated_at: Timestamp,
     /// User ID
     #[serde(rename = "user_id")]
     pub user_id: String,
