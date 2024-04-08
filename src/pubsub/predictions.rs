@@ -52,6 +52,7 @@ pub struct Data {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Event {
     /// ID
     pub id: String,
@@ -91,6 +92,7 @@ pub struct Event {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct ByUser {
     /// USER
     #[serde(rename = "type")]
@@ -107,6 +109,7 @@ pub struct ByUser {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Outcome {
     /// ID
     pub id: String,
@@ -131,6 +134,7 @@ pub struct Outcome {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct TopPredictor {
     /// ID
     pub id: String,
@@ -163,6 +167,7 @@ pub struct TopPredictor {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Badge {
     /// Version
     pub version: String,

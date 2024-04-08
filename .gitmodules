@@ -3,4 +3,5 @@
 	url = https://github.com/twitch-rs/twitch_oauth2
 [submodule "twitch_types"]
 	path = twitch_types
-	url = https://github.com/twitch-rs/twitch_types
+	url = https://github.com/t348575/twitch_types
+	branch = utoipa

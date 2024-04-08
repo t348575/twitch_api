@@ -29,7 +29,7 @@ exclude = ["twitch_types", "twitch_oauth2"]
 [workspace.dependencies]
 twitch_api = { version = "0.7.0-rc.6", path = "." }
 twitch_oauth2 = { version = "0.13.0", path = "twitch_oauth2/" }
-twitch_types = { version = "0.4.3", features = [
+twitch_types = { version = "0.4.4", features = [
     "serde",
 ] }
 
@@ -64,10 +64,11 @@ hyper = { version = "1.2.0", optional = true }
 http-body-util = { version = "0.1.1", optional = true }
 twitch_types = { workspace = true }
 tower-service = { version = "0.3.2", optional = true }
+utoipa = { version = "4", optional = true }
 
 [features]
 default = ["deser_borrow"]
-
+utoipa = ["dep:utoipa", "twitch_types/utoipa"]
 client = ["twitch_oauth2/client", "dep:futures", "dep:hyper"]
 
 unsupported = ["serde_json?/raw_value", "beta"]

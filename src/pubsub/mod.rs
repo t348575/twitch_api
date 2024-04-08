@@ -213,6 +213,7 @@ impl std::fmt::Display for Topics {
             UserModerationNotifications(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             PredictionsChannelV1(t) => t.to_string(),
+            #[cfg(feature = "unsupported")]
             CommunityPointsUserV1(t) => t.to_string(),
         };
         f.write_str(&s)
