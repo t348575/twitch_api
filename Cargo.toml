@@ -69,6 +69,7 @@ utoipa = { version = "4", optional = true }
 [features]
 default = ["deser_borrow"]
 utoipa = ["twitch_types/utoipa", "dep:utoipa"]
+time = ["twitch_types/time"]
 client = ["twitch_oauth2/client", "dep:futures", "dep:hyper"]
 
 unsupported = ["serde_json?/raw_value", "beta"]

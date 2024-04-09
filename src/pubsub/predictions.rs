@@ -94,9 +94,6 @@ pub struct Event {
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct ByUser {
-    /// USER
-    #[serde(rename = "type")]
-    pub type_field: String,
     /// User ID
     #[serde(rename = "user_id")]
     pub user_id: String,
