@@ -62,15 +62,9 @@ pub struct Event {
     /// Created at
     #[serde(rename = "created_at")]
     pub created_at: Timestamp,
-    /// Created by
-    #[serde(rename = "created_by")]
-    pub created_by: ByUser,
     /// Ended at
     #[serde(rename = "ended_at")]
     pub ended_at: Option<Timestamp>,
-    /// Ended by user
-    #[serde(rename = "ended_by")]
-    pub ended_by: Option<ByUser>,
     /// Locked at
     #[serde(rename = "locked_at")]
     pub locked_at: Option<Timestamp>,
@@ -86,20 +80,6 @@ pub struct Event {
     /// Winning outcome ID
     #[serde(rename = "winning_outcome_id")]
     pub winning_outcome_id: Option<String>,
-}
-
-/// Created or ended by user
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct ByUser {
-    /// User ID
-    #[serde(rename = "user_id")]
-    pub user_id: String,
-    /// User display name
-    #[serde(rename = "user_display_name")]
-    pub user_display_name: String,
 }
 
 /// Outcome
