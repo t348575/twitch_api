@@ -123,8 +123,6 @@ pub struct Outcome {
     /// Top predictors
     #[serde(rename = "top_predictors")]
     pub top_predictors: Vec<TopPredictor>,
-    /// Badge
-    pub badge: Badge,
 }
 
 /// Top predictor
@@ -158,17 +156,4 @@ pub struct TopPredictor {
     /// User display name
     #[serde(rename = "user_display_name")]
     pub user_display_name: String,
-}
-
-/// Badge
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub struct Badge {
-    /// Version
-    pub version: String,
-    /// Set ID
-    #[serde(rename = "set_id")]
-    pub set_id: String,
 }
