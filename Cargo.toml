@@ -67,6 +67,7 @@ tower-service = { version = "0.3.2", optional = true }
 utoipa = { version = "4", optional = true }
 
 [features]
+mock = []
 default = ["deser_borrow"]
 utoipa = ["twitch_types/utoipa", "dep:utoipa"]
 time = ["twitch_types/time"]

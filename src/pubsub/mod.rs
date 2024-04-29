@@ -334,7 +334,7 @@ where
 }
 
 /// Response from twitch PubSub
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct TwitchResponse {
     /// The nonce that was passed in the request, if one was provided there
     pub nonce: Option<String>,
@@ -351,7 +351,7 @@ impl TwitchResponse {
 /// Message response from twitch PubSub.
 ///
 /// See [TwitchResponse]
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum TopicData {
     /// Response from the [automod_queue::AutoModQueue] topic.
@@ -359,7 +359,6 @@ pub enum TopicData {
         /// Topic message
         topic: automod_queue::AutoModQueue,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<automod_queue::AutoModQueueReply>,
     },
     /// Response from the [channel_bits::ChannelBitsEventsV2] topic.
@@ -367,7 +366,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_bits::ChannelBitsEventsV2,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_bits::ChannelBitsEventsV2Reply>,
     },
     /// Response from the [channel_bits_badge::ChannelBitsBadgeUnlocks] topic.
@@ -375,7 +373,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_bits_badge::ChannelBitsBadgeUnlocks,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_bits_badge::ChannelBitsBadgeUnlocksReply>,
     },
     /// Response from the [moderation::ChatModeratorActions] topic.
@@ -383,7 +380,6 @@ pub enum TopicData {
         /// Topic message
         topic: moderation::ChatModeratorActions,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<moderation::ChatModeratorActionsReply>,
     },
     /// Response from the [channel_points::ChannelPointsChannelV1] topic.
@@ -391,7 +387,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_points::ChannelPointsChannelV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_points::ChannelPointsChannelV1Reply>,
     },
     /// Response from the [channel_subscriptions::ChannelSubscribeEventsV1] topic.
@@ -399,7 +394,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_subscriptions::ChannelSubscribeEventsV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_subscriptions::ChannelSubscribeEventsV1Reply>, // FIXME: :)
     },
     /// Response from the [community_points::CommunityPointsChannelV1] topic.
@@ -408,7 +402,6 @@ pub enum TopicData {
         /// Topic message
         topic: community_points::CommunityPointsChannelV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_points::ChannelPointsChannelV1Reply>,
     },
     /// Response from the [channel_cheer::ChannelCheerEventsPublicV1] topic.
@@ -417,7 +410,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_cheer::ChannelCheerEventsPublicV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_cheer::ChannelCheerEventsPublicV1Reply>,
     },
     /// Response from the [channel_sub_gifts::ChannelSubGiftsV1] topic.
@@ -426,7 +418,6 @@ pub enum TopicData {
         /// Topic message
         topic: channel_sub_gifts::ChannelSubGiftsV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<channel_sub_gifts::ChannelSubGiftsV1Reply>,
     },
 
@@ -436,7 +427,6 @@ pub enum TopicData {
         /// Topic message
         topic: video_playback::VideoPlayback,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<video_playback::VideoPlaybackReply>,
     },
     /// Response from the [video_playback::VideoPlaybackById] topic.
@@ -445,7 +435,6 @@ pub enum TopicData {
         /// Topic message
         topic: video_playback::VideoPlaybackById,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<video_playback::VideoPlaybackReply>,
     },
     /// Response from the [hypetrain::HypeTrainEventsV1] topic.
@@ -454,7 +443,6 @@ pub enum TopicData {
         /// Topic message
         topic: hypetrain::HypeTrainEventsV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<hypetrain::HypeTrainEventsV1Reply>, // FIXME: May not be correct
     },
     /// Response from the [hypetrain::HypeTrainEventsV1Rewards] topic.
@@ -463,7 +451,6 @@ pub enum TopicData {
         /// Topic message
         topic: hypetrain::HypeTrainEventsV1Rewards,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<hypetrain::HypeTrainEventsV1Reply>,
     },
     /// Response from the [following::Following] topic.
@@ -472,7 +459,6 @@ pub enum TopicData {
         /// Topic message
         topic: following::Following,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<following::FollowingReply>,
     },
     /// Response from the [raid::Raid] topic.
@@ -481,7 +467,6 @@ pub enum TopicData {
         /// Topic message
         topic: raid::Raid,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<raid::RaidReply>,
     },
     /// A user’s message held by AutoMod has been approved or denied.
@@ -489,7 +474,6 @@ pub enum TopicData {
         /// Topic message
         topic: user_moderation_notifications::UserModerationNotifications,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<user_moderation_notifications::UserModerationNotificationsReply>,
     },
     /// Channel predictions
@@ -498,7 +482,6 @@ pub enum TopicData {
         /// Topic message
         topic: predictions::PredictionsChannelV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<predictions::PredictionsChannelV1Reply>,
     },
     /// A user is awarded channel points
@@ -507,8 +490,42 @@ pub enum TopicData {
         /// Topic message
         topic: community_points::CommunityPointsUserV1,
         /// Message reply from topic subscription
-        #[serde(rename = "message")]
         reply: Box<community_points::CommunityPointsUserV1Reply>,
+    }
+}
+
+impl serde::Serialize for TopicData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        #[derive(Serialize, Debug)]
+        struct ITopicData {
+            topic: Topics,
+            message: String,
+        }
+
+        let (topic, reply) = match self {
+            TopicData::AutoModQueue { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelBitsEventsV2 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelBitsBadgeUnlocks { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChatModeratorActions { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelPointsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelSubscribeEventsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::CommunityPointsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelCheerEventsPublicV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::ChannelSubGiftsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::VideoPlayback { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::VideoPlaybackById { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::HypeTrainEventsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::HypeTrainEventsV1Rewards { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::Following { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::Raid { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::UserModerationNotifications { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::PredictionsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            TopicData::CommunityPointsUserV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+        };
+
+        ITopicData { topic, message: reply }.serialize(serializer)
     }
 }
 
@@ -613,9 +630,53 @@ impl<'de> serde::Deserialize<'de> for TopicData {
     }
 }
 
+/// Requests to the server, meant for mocking
+/// #[derive(Clone, Debug, PartialEq, Deserialize)]
+#[cfg(feature = "mock")]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type")]
+#[non_exhaustive]
+pub enum Request {
+    #[serde(rename = "PING")]
+    /// Ping
+    Ping,
+    #[serde(rename = "LISTEN")]
+    /// Listening to a topic
+    Listen {
+        /// Topics to listen to
+        data: ListenData,
+        /// Message nonce
+        nonce: Option<String>
+    },
+    #[serde(rename = "UNLISTEN")]
+    /// Listening to a topic
+    UnListen {
+        /// Topics to listen to
+        data: ListenData,
+        /// Message nonce
+        nonce: Option<String>
+    },
+}
+
+#[cfg(feature = "mock")]
+/// Request to listen to a topic
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ListenData {
+    /// Topics to listen to
+    pub topics: Vec<Topics>,
+    /// Authentication token
+    pub auth_token: Option<String>
+}
+
+impl Request {
+    // FIXME: Add example
+    /// Parse string slice as a response.
+    pub fn parse(source: &str) -> Result<Request, crate::DeserError> { parse_json(source, true) }
+}
+
 /// Response from twitchs PubSub server.
 /// Either a response indicating status of something or a message from a topic
-#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(tag = "type")]
 #[non_exhaustive]
 pub enum Response {
