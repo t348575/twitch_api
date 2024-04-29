@@ -668,6 +668,7 @@ pub struct ListenData {
     pub auth_token: Option<String>
 }
 
+#[cfg(feature = "mock")]
 impl Request {
     // FIXME: Add example
     /// Parse string slice as a response.
