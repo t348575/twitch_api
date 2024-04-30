@@ -127,7 +127,7 @@ pub mod helix;
 #[cfg(feature = "tmi")]
 pub mod tmi;
 
-#[cfg(feature = "pubsub")]
+#[cfg(any(feature = "pubsub", feature = "tpm"))]
 pub mod pubsub;
 
 #[cfg(feature = "eventsub")]

@@ -2,7 +2,7 @@
 #![doc(alias = "predictions-channel-v1")]
 //! PubSub messages for predictions
 use crate::{pubsub, types::Timestamp};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 /// A user redeems an reward using channel points.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]

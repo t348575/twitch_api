@@ -8,6 +8,7 @@
 use crate::{pubsub, types};
 use serde_derive::{Deserialize, Serialize};
 
+#[cfg(feature = "unsupported")]
 /// Statistics about stream
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[serde(into = "String", try_from = "String")]
@@ -16,8 +17,10 @@ pub struct VideoPlayback {
     pub channel_login: types::DisplayName,
 }
 
+#[cfg(feature = "unsupported")]
 impl_de_ser!(VideoPlayback, "video-playback", channel_login);
 
+#[cfg(feature = "unsupported")]
 impl pubsub::Topic for VideoPlayback {
     #[cfg(feature = "twitch_oauth2")]
     const SCOPE: twitch_oauth2::Validator = twitch_oauth2::validator![];

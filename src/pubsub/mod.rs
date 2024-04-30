@@ -83,28 +83,35 @@ macro_rules! impl_de_ser {
 use serde::Deserializer;
 use serde_derive::{Deserialize, Serialize};
 
+#[cfg(feature = "pubsub")]
 pub mod automod_queue;
+#[cfg(feature = "pubsub")]
 pub mod channel_bits;
+#[cfg(feature = "pubsub")]
 pub mod channel_bits_badge;
 #[cfg(feature = "unsupported")]
 pub mod channel_cheer;
+#[cfg(feature = "pubsub")]
 pub mod channel_points;
 #[cfg(feature = "unsupported")]
 pub mod channel_sub_gifts;
+#[cfg(feature = "pubsub")]
 pub mod channel_subscriptions;
-#[cfg(feature = "unsupported")]
+#[cfg(any(feature = "unsupported", feature = "tpm"))]
 pub mod community_points;
 #[cfg(feature = "unsupported")]
 pub mod following;
 #[cfg(feature = "unsupported")]
 pub mod hypetrain;
+#[cfg(feature = "pubsub")]
 pub mod moderation;
-#[cfg(feature = "unsupported")]
+#[cfg(any(feature = "unsupported", feature = "tpm"))]
 pub mod raid;
+#[cfg(feature = "pubsub")]
 pub mod user_moderation_notifications;
-#[cfg(feature = "unsupported")]
+#[cfg(any(feature = "unsupported", feature = "tpm"))]
 pub mod video_playback;
-#[cfg(feature = "unsupported")]
+#[cfg(any(feature = "unsupported", feature = "tpm"))]
 pub mod predictions;
 
 use crate::parse_json;
@@ -134,13 +141,16 @@ pub trait Topic: serde::Serialize + Into<String> {
 #[non_exhaustive]
 pub enum Topics {
     /// AutoMod flags a message as potentially inappropriate, and when a moderator takes action on a message.
+    #[cfg(feature = "pubsub")]
     AutoModQueue(automod_queue::AutoModQueue),
     /// A user redeems an reward using channel points.
     #[cfg(feature = "unsupported")]
     CommunityPointsChannelV1(community_points::CommunityPointsChannelV1),
     /// Anyone cheers in a specified channel.
+    #[cfg(feature = "pubsub")]
     ChannelBitsEventsV2(channel_bits::ChannelBitsEventsV2),
     /// Anyone shares a bit badge in a specified channel.
+    #[cfg(feature = "pubsub")]
     ChannelBitsBadgeUnlocks(channel_bits_badge::ChannelBitsBadgeUnlocks),
     /// A user redeems a cheer with shared rewards.
     #[cfg(feature = "unsupported")]
@@ -149,16 +159,19 @@ pub enum Topics {
     #[cfg(feature = "unsupported")]
     ChannelSubGiftsV1(channel_sub_gifts::ChannelSubGiftsV1),
     /// A moderator performs an action in the channel.
+    #[cfg(feature = "pubsub")]
     ChatModeratorActions(moderation::ChatModeratorActions),
     /// A user redeems an reward using channel points.
+    #[cfg(feature = "pubsub")]
     ChannelPointsChannelV1(channel_points::ChannelPointsChannelV1),
     /// A subscription event happens in channel
+    #[cfg(feature = "pubsub")]
     ChannelSubscribeEventsV1(channel_subscriptions::ChannelSubscribeEventsV1),
     /// Statistics about stream
     #[cfg(feature = "unsupported")]
     VideoPlayback(video_playback::VideoPlayback),
     /// Statistics about stream
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     VideoPlaybackById(video_playback::VideoPlaybackById),
     /// A user redeems an reward using channel points.
     #[cfg(feature = "unsupported")]
@@ -170,15 +183,16 @@ pub enum Topics {
     #[cfg(feature = "unsupported")]
     Following(following::Following),
     /// A user raids the channel
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     Raid(raid::Raid),
     /// A user’s message held by AutoMod has been approved or denied.
+    #[cfg(feature = "pubsub")]
     UserModerationNotifications(user_moderation_notifications::UserModerationNotifications),
     /// Channel predictions
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     PredictionsChannelV1(predictions::PredictionsChannelV1),
     /// A user is awarded channel points
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     CommunityPointsUserV1(community_points::CommunityPointsUserV1),
 }
 
@@ -186,21 +200,27 @@ impl std::fmt::Display for Topics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use self::Topics::*;
         let s = match self {
+            #[cfg(feature = "pubsub")]
             AutoModQueue(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             CommunityPointsChannelV1(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             ChannelBitsEventsV2(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             ChannelBitsBadgeUnlocks(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             ChannelCheerEventsPublicV1(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             ChannelSubGiftsV1(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             ChatModeratorActions(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             ChannelPointsChannelV1(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             ChannelSubscribeEventsV1(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             VideoPlayback(t) => t.to_string(),
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             VideoPlaybackById(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             HypeTrainEventsV1(t) => t.to_string(),
@@ -208,12 +228,13 @@ impl std::fmt::Display for Topics {
             HypeTrainEventsV1Rewards(t) => t.to_string(),
             #[cfg(feature = "unsupported")]
             Following(t) => t.to_string(),
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Raid(t) => t.to_string(),
+            #[cfg(feature = "pubsub")]
             UserModerationNotifications(t) => t.to_string(),
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             PredictionsChannelV1(t) => t.to_string(),
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             CommunityPointsUserV1(t) => t.to_string(),
         };
         f.write_str(&s)
@@ -355,6 +376,7 @@ impl TwitchResponse {
 #[non_exhaustive]
 pub enum TopicData {
     /// Response from the [automod_queue::AutoModQueue] topic.
+    #[cfg(feature = "pubsub")]
     AutoModQueue {
         /// Topic message
         topic: automod_queue::AutoModQueue,
@@ -362,6 +384,7 @@ pub enum TopicData {
         reply: Box<automod_queue::AutoModQueueReply>,
     },
     /// Response from the [channel_bits::ChannelBitsEventsV2] topic.
+    #[cfg(feature = "pubsub")]
     ChannelBitsEventsV2 {
         /// Topic message
         topic: channel_bits::ChannelBitsEventsV2,
@@ -369,6 +392,7 @@ pub enum TopicData {
         reply: Box<channel_bits::ChannelBitsEventsV2Reply>,
     },
     /// Response from the [channel_bits_badge::ChannelBitsBadgeUnlocks] topic.
+    #[cfg(feature = "pubsub")]
     ChannelBitsBadgeUnlocks {
         /// Topic message
         topic: channel_bits_badge::ChannelBitsBadgeUnlocks,
@@ -376,6 +400,7 @@ pub enum TopicData {
         reply: Box<channel_bits_badge::ChannelBitsBadgeUnlocksReply>,
     },
     /// Response from the [moderation::ChatModeratorActions] topic.
+    #[cfg(feature = "pubsub")]
     ChatModeratorActions {
         /// Topic message
         topic: moderation::ChatModeratorActions,
@@ -383,6 +408,7 @@ pub enum TopicData {
         reply: Box<moderation::ChatModeratorActionsReply>,
     },
     /// Response from the [channel_points::ChannelPointsChannelV1] topic.
+    #[cfg(feature = "pubsub")]
     ChannelPointsChannelV1 {
         /// Topic message
         topic: channel_points::ChannelPointsChannelV1,
@@ -390,6 +416,7 @@ pub enum TopicData {
         reply: Box<channel_points::ChannelPointsChannelV1Reply>,
     },
     /// Response from the [channel_subscriptions::ChannelSubscribeEventsV1] topic.
+    #[cfg(feature = "pubsub")]
     ChannelSubscribeEventsV1 {
         /// Topic message
         topic: channel_subscriptions::ChannelSubscribeEventsV1,
@@ -430,7 +457,7 @@ pub enum TopicData {
         reply: Box<video_playback::VideoPlaybackReply>,
     },
     /// Response from the [video_playback::VideoPlaybackById] topic.
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     VideoPlaybackById {
         /// Topic message
         topic: video_playback::VideoPlaybackById,
@@ -462,7 +489,7 @@ pub enum TopicData {
         reply: Box<following::FollowingReply>,
     },
     /// Response from the [raid::Raid] topic.
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     Raid {
         /// Topic message
         topic: raid::Raid,
@@ -470,6 +497,7 @@ pub enum TopicData {
         reply: Box<raid::RaidReply>,
     },
     /// A user’s message held by AutoMod has been approved or denied.
+    #[cfg(feature = "pubsub")]
     UserModerationNotifications {
         /// Topic message
         topic: user_moderation_notifications::UserModerationNotifications,
@@ -477,7 +505,7 @@ pub enum TopicData {
         reply: Box<user_moderation_notifications::UserModerationNotificationsReply>,
     },
     /// Channel predictions
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     PredictionsChannelV1 {
         /// Topic message
         topic: predictions::PredictionsChannelV1,
@@ -485,7 +513,7 @@ pub enum TopicData {
         reply: Box<predictions::PredictionsChannelV1Reply>,
     },
     /// A user is awarded channel points
-    #[cfg(feature = "unsupported")]
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
     CommunityPointsUserV1 {
         /// Topic message
         topic: community_points::CommunityPointsUserV1,
@@ -505,23 +533,41 @@ impl serde::Serialize for TopicData {
         }
 
         let (topic, reply) = match self {
+            #[cfg(feature = "pubsub")]
             TopicData::AutoModQueue { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::ChannelBitsEventsV2 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::ChannelBitsBadgeUnlocks { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::ChatModeratorActions { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::ChannelPointsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::ChannelSubscribeEventsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::CommunityPointsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::ChannelCheerEventsPublicV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::ChannelSubGiftsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::VideoPlayback { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::VideoPlaybackById { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::HypeTrainEventsV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::HypeTrainEventsV1Rewards { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "unsupported")]
             TopicData::Following { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::Raid { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(feature = "pubsub")]
             TopicData::UserModerationNotifications { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::PredictionsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::CommunityPointsUserV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
         };
 
@@ -543,6 +589,7 @@ impl<'de> serde::Deserialize<'de> for TopicData {
             serde::de::Error::custom(format!("could not deserialize topic reply: {e}"))
         })?;
         Ok(match reply.topic {
+            #[cfg(feature = "pubsub")]
             Topics::AutoModQueue(topic) => TopicData::AutoModQueue {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
@@ -552,10 +599,12 @@ impl<'de> serde::Deserialize<'de> for TopicData {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::ChannelBitsEventsV2(topic) => TopicData::ChannelBitsEventsV2 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::ChannelBitsBadgeUnlocks(topic) => TopicData::ChannelBitsBadgeUnlocks {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
@@ -570,14 +619,17 @@ impl<'de> serde::Deserialize<'de> for TopicData {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::ChatModeratorActions(topic) => TopicData::ChatModeratorActions {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::ChannelPointsChannelV1(topic) => TopicData::ChannelPointsChannelV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::ChannelSubscribeEventsV1(topic) => TopicData::ChannelSubscribeEventsV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
@@ -587,7 +639,7 @@ impl<'de> serde::Deserialize<'de> for TopicData {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Topics::VideoPlaybackById(topic) => TopicData::VideoPlaybackById {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
@@ -607,21 +659,22 @@ impl<'de> serde::Deserialize<'de> for TopicData {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Topics::Raid(topic) => TopicData::Raid {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
+            #[cfg(feature = "pubsub")]
             Topics::UserModerationNotifications(topic) => TopicData::UserModerationNotifications {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Topics::PredictionsChannelV1(topic) => TopicData::PredictionsChannelV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "unsupported")]
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Topics::CommunityPointsUserV1(topic) => TopicData::CommunityPointsUserV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
@@ -705,6 +758,7 @@ impl Response {
 }
 
 /// Deserialize 'null' as <T as Default>::Default
+#[cfg(feature = "pubsub")]
 fn deserialize_default_from_null<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
     D: Deserializer<'de>,
@@ -715,6 +769,7 @@ where
 }
 
 /// Deserialize "" as <T as Default>::Default
+#[cfg(feature = "pubsub")]
 fn deserialize_none_from_empty_string<'de, D, S>(deserializer: D) -> Result<Option<S>, D::Error>
 where
     D: serde::Deserializer<'de>,

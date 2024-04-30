@@ -3,24 +3,27 @@
 //!
 //! See also [`pubsub::channel_points`]
 use crate::{pubsub, types};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 /// A user redeems an reward using channel points.
 ///
 /// Reply is [`pubsub::channel_points::ChannelPointsChannelV1Reply`]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(into = "String", try_from = "String")]
+#[cfg(feature = "unsupported")]
 pub struct CommunityPointsChannelV1 {
     /// The channel_id to watch. Can be fetched with the [Get Users](crate::helix::users::get_users) endpoint
     pub channel_id: u32,
 }
 
+#[cfg(feature = "unsupported")]
 impl_de_ser!(
     CommunityPointsChannelV1,
     "community-points-channel-v1",
     channel_id // FIXME: add trailing comma
 );
 
+#[cfg(feature = "unsupported")]
 impl pubsub::Topic for CommunityPointsChannelV1 {
     #[cfg(feature = "twitch_oauth2")]
     const SCOPE: twitch_oauth2::Validator = twitch_oauth2::validator![];
