@@ -71,7 +71,8 @@ mock = []
 tpm = [
     "serde_json",
     "twitch_types/stream",
-    "twitch_types/timestamp"
+    "twitch_types/timestamp",
+    "twitch_types/time"
 ]
 default = ["deser_borrow", "dep:once_cell", "dep:aliri_braid", "dep:http", "dep:url"]
 utoipa = ["twitch_types/utoipa", "dep:utoipa"]
