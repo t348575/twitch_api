@@ -85,10 +85,10 @@ pub struct Claim {
     pub id: String,
     #[serde(rename = "user_id")]
     /// The id of the user
-    pub user_id: String,
+    pub user_id: types::UserId,
     #[serde(rename = "channel_id")]
     /// The id of the channel
-    pub channel_id: String,
+    pub channel_id: types::UserId,
     #[serde(rename = "point_gain")]
     /// The amount of points gained
     pub point_gain: PointGain,
@@ -104,10 +104,10 @@ pub struct Claim {
 pub struct PointGain {
     /// The id of the user
     #[serde(rename = "user_id")]
-    pub user_id: String,
+    pub user_id: types::UserId,
     /// The id of the channel
     #[serde(rename = "channel_id")]
-    pub channel_id: String,
+    pub channel_id: types::UserId,
     /// The amount of points
     #[serde(rename = "total_points")]
     pub total_points: i64,
