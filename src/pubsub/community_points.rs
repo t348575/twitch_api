@@ -55,25 +55,29 @@ impl pubsub::Topic for CommunityPointsUserV1 {
 
 /// Reply for [`CommunityPointsUserV1`]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(tag = "type", content = "data", rename_all = "snake_case")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-pub struct CommunityPointsUserV1Reply {
-    /// The type of message
-    #[serde(rename = "type")]
-    pub type_field: String,
-    /// Event data
-    pub data: Data,
-}
-
-/// [`CommunityPointsUserV1Reply`] event data
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-pub struct Data {
-    /// Event timestamp
-    pub timestamp: types::Timestamp,
-    /// Event data
-    pub claim: Claim,
+pub enum CommunityPointsUserV1Reply {
+    /// Claiming of channel points
+    ClaimClaimed {
+        /// Event timestamp
+        timestamp: types::Timestamp,
+        /// Event data
+        claim: Claim,
+    },
+    /// Points earned
+    PointsEarned {
+        /// Event timestamp
+        timestamp: String,
+        /// The id of the channel
+        #[serde(rename = "channel_id")]
+        channel_id: String,
+        /// Points gained
+        #[serde(rename = "point_gain")]
+        point_gain: PointGain,
+        /// The current balance
+        balance: Balance,
+    }
 }
 
 /// [`CommunityPointsUserV1Reply`] claim data
@@ -95,6 +99,21 @@ pub struct Claim {
     /// The timestamp when the redemption was created
     #[serde(rename = "created_at")]
     pub created_at: types::Timestamp,
+}
+
+/// [`CommunityPointsUserV1Reply`] balance
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub struct Balance {
+    /// The id of the user
+    #[serde(rename = "user_id")]
+    pub user_id: String,
+    /// The id of the channel
+    #[serde(rename = "channel_id")]
+    pub channel_id: String,
+    /// The amount of points
+    pub balance: i64,
 }
 
 /// Points gained
