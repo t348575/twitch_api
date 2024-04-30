@@ -72,53 +72,52 @@ pub struct CommunityPointsUserV1Reply {
 pub struct Data {
     /// Event timestamp
     pub timestamp: types::Timestamp,
-    #[serde(rename = "channel_id")]
-    /// Channel ID
-    pub channel_id: String,
-    #[serde(rename = "point_gain")]
-    /// The point gain
-    pub point_gain: PointGain,
-    /// Points balance
-    pub balance: Balance,
+    /// Event data
+    pub claim: Claim,
 }
 
-/// Point gain
+/// [`CommunityPointsUserV1Reply`] claim data
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub struct Claim {
+    /// The id of the redemption
+    pub id: String,
+    #[serde(rename = "user_id")]
+    /// The id of the user
+    pub user_id: String,
+    #[serde(rename = "channel_id")]
+    /// The id of the channel
+    pub channel_id: String,
+    #[serde(rename = "point_gain")]
+    /// The amount of points gained
+    pub point_gain: PointGain,
+    /// The timestamp when the redemption was created
+    #[serde(rename = "created_at")]
+    pub created_at: types::Timestamp,
+}
+
+/// Points gained
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
 pub struct PointGain {
-    /// User ID
+    /// The id of the user
     #[serde(rename = "user_id")]
     pub user_id: String,
-    /// Channel ID
+    /// The id of the channel
     #[serde(rename = "channel_id")]
     pub channel_id: String,
-    /// Total points
+    /// The amount of points
     #[serde(rename = "total_points")]
     pub total_points: i64,
-    /// Points gained
+    /// The amount of baseline points
     #[serde(rename = "baseline_points")]
     pub baseline_points: i64,
-    /// Reason for points
+    /// The reason for the points
     #[serde(rename = "reason_code")]
-    pub reason_code: String,
+    pub reason_code: String
 }
-
-/// Balance
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-pub struct Balance {
-    /// User ID
-    #[serde(rename = "user_id")]
-    pub user_id: String,
-    /// Channel ID
-    #[serde(rename = "channel_id")]
-    pub channel_id: String,
-    /// Points balance
-    pub balance: i64,
-}
-
 
 #[cfg(test)]
 mod tests {
