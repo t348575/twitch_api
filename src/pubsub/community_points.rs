@@ -59,6 +59,7 @@ impl pubsub::Topic for CommunityPointsUserV1 {
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
 pub enum CommunityPointsUserV1Reply {
     /// Claiming of channel points
+    #[serde(alias = "claim-available")]
     ClaimClaimed {
         /// Event timestamp
         timestamp: types::Timestamp,
