@@ -55,7 +55,7 @@ impl pubsub::Topic for CommunityPointsUserV1 {
 
 /// Reply for [`CommunityPointsUserV1`]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(tag = "type", content = "data", rename_all = "snake_case")]
+#[serde(tag = "type", content = "data", rename_all = "kebab-case")]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
 pub enum CommunityPointsUserV1Reply {
     /// Claiming of channel points
