@@ -72,7 +72,7 @@ pub enum CommunityPointsUserV1Reply {
         timestamp: String,
         /// The id of the channel
         #[serde(rename = "channel_id")]
-        channel_id: String,
+        channel_id: types::UserId,
         /// Points gained
         #[serde(rename = "point_gain")]
         point_gain: PointGain,
@@ -109,10 +109,10 @@ pub struct Claim {
 pub struct Balance {
     /// The id of the user
     #[serde(rename = "user_id")]
-    pub user_id: String,
+    pub user_id: types::UserId,
     /// The id of the channel
     #[serde(rename = "channel_id")]
-    pub channel_id: String,
+    pub channel_id: types::UserId,
     /// The amount of points
     pub balance: i64,
 }
