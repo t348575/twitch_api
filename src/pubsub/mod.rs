@@ -191,6 +191,9 @@ pub enum Topics {
     /// Channel predictions
     #[cfg(any(feature = "unsupported", feature = "tpm"))]
     PredictionsChannelV1(predictions::PredictionsChannelV1),
+    /// Channel predictions
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
+    PredictionsUserV1(predictions::PredictionsUserV1),
     /// A user is awarded channel points
     #[cfg(any(feature = "unsupported", feature = "tpm"))]
     CommunityPointsUserV1(community_points::CommunityPointsUserV1),
@@ -234,6 +237,8 @@ impl std::fmt::Display for Topics {
             UserModerationNotifications(t) => t.to_string(),
             #[cfg(any(feature = "unsupported", feature = "tpm"))]
             PredictionsChannelV1(t) => t.to_string(),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
+            PredictionsUserV1(t) => t.to_string(),
             #[cfg(any(feature = "unsupported", feature = "tpm"))]
             CommunityPointsUserV1(t) => t.to_string(),
         };
@@ -512,6 +517,14 @@ pub enum TopicData {
         /// Message reply from topic subscription
         reply: Box<predictions::PredictionsChannelV1Reply>,
     },
+    /// Channel predictions
+    #[cfg(any(feature = "unsupported", feature = "tpm"))]
+    PredictionsUserV1 {
+        /// Topic message
+        topic: predictions::PredictionsUserV1,
+        /// Message reply from topic subscription
+        reply: Box<predictions::PredictionsUserV1Reply>,
+    },
     /// A user is awarded channel points
     #[cfg(any(feature = "unsupported", feature = "tpm"))]
     CommunityPointsUserV1 {
@@ -567,6 +580,8 @@ impl serde::Serialize for TopicData {
             TopicData::UserModerationNotifications { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
             #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::PredictionsChannelV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
+            TopicData::PredictionsUserV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
             #[cfg(any(feature = "unsupported", feature = "tpm"))]
             TopicData::CommunityPointsUserV1 { topic, reply } => (topic.clone().into_topic(), serde_json::to_string(&reply).map_err(serde::ser::Error::custom)?),
         };
@@ -671,6 +686,11 @@ impl<'de> serde::Deserialize<'de> for TopicData {
             },
             #[cfg(any(feature = "unsupported", feature = "tpm"))]
             Topics::PredictionsChannelV1(topic) => TopicData::PredictionsChannelV1 {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            #[cfg(any(feature = "unsupported", feature = "tpm"))]
+            Topics::PredictionsUserV1(topic) => TopicData::PredictionsUserV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
