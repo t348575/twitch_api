@@ -69,13 +69,20 @@ pub enum CommunityPointsUserV1Reply {
     /// Points earned
     PointsEarned {
         /// Event timestamp
-        timestamp: String,
+        timestamp: types::Timestamp,
         /// The id of the channel
         #[serde(rename = "channel_id")]
         channel_id: types::UserId,
         /// Points gained
         #[serde(rename = "point_gain")]
         point_gain: PointGain,
+        /// The current balance
+        balance: Balance,
+    },
+    /// Points spent
+    PointsSpent {
+        /// Event timestamp
+        timestamp: types::Timestamp,
         /// The current balance
         balance: Balance,
     }
