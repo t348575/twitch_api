@@ -76,7 +76,7 @@ tpm = [
     "twitch_types/timestamp",
     "twitch_types/time"
 ]
-default = ["deser_borrow", "dep:once_cell", "dep:aliri_braid", "dep:http", "dep:url"]
+default = ["deser_borrow", "dep:aliri_braid"]
 utoipa = ["twitch_types/utoipa", "dep:utoipa"]
 time = ["twitch_types/time"]
 client = ["twitch_oauth2/client", "dep:futures", "dep:hyper"]
