@@ -1,13 +1,15 @@
 #![deny(missing_docs, rustdoc::broken_intra_doc_links)]
 #![allow(clippy::needless_raw_string_hashes)]
+#![cfg_attr(test, allow(deprecated))] // for pubsub tests
 #![cfg_attr(nightly, feature(doc_cfg))]
 #![cfg_attr(nightly, feature(doc_auto_cfg))]
-#![doc(html_root_url = "https://docs.rs/twitch_api/0.7.0-rc.7")]
-//! [![github]](https://github.com/twitch-rs/twitch_api)&ensp;[![crates-io]](https://crates.io/crates/twitch_api)&ensp;[![docs-rs-big]](https://docs.rs/twitch_api/0.7.0-rc.7/twitch_api)
+#![allow(clippy::needless_raw_string_hashes)]
+#![doc(html_root_url = "https://docs.rs/twitch_api/0.7.2")]
+//! [![github]](https://github.com/twitch-rs/twitch_api)&ensp;[![crates-io]](https://crates.io/crates/twitch_api)&ensp;[![docs-rs-big]](https://docs.rs/twitch_api/0.7.2/twitch_api)
 //!
 //! [github]: https://img.shields.io/badge/github-twitch--rs/twitch__api-8da0cb?style=for-the-badge&labelColor=555555&logo=github"
 //! [crates-io]: https://img.shields.io/crates/v/twitch_api.svg?style=for-the-badge&color=fc8d62&logo=rust"
-//! [docs-rs-big]: https://img.shields.io/badge/docs.rs-twitch__api2-66c2a5?style=for-the-badge&labelColor=555555&logoColor=white&logo=data:image/svg+xml;base64,PHN2ZyByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiPjxwYXRoIGZpbGw9IiNmNWY1ZjUiIGQ9Ik00ODguNiAyNTAuMkwzOTIgMjE0VjEwNS41YzAtMTUtOS4zLTI4LjQtMjMuNC0zMy43bC0xMDAtMzcuNWMtOC4xLTMuMS0xNy4xLTMuMS0yNS4zIDBsLTEwMCAzNy41Yy0xNC4xIDUuMy0yMy40IDE4LjctMjMuNCAzMy43VjIxNGwtOTYuNiAzNi4yQzkuMyAyNTUuNSAwIDI2OC45IDAgMjgzLjlWMzk0YzAgMTMuNiA3LjcgMjYuMSAxOS45IDMyLjJsMTAwIDUwYzEwLjEgNS4xIDIyLjEgNS4xIDMyLjIgMGwxMDMuOS01MiAxMDMuOSA1MmMxMC4xIDUuMSAyMi4xIDUuMSAzMi4yIDBsMTAwLTUwYzEyLjItNi4xIDE5LjktMTguNiAxOS45LTMyLjJWMjgzLjljMC0xNS05LjMtMjguNC0yMy40LTMzLjd6TTM1OCAyMTQuOGwtODUgMzEuOXYtNjguMmw4NS0zN3Y3My4zek0xNTQgMTA0LjFsMTAyLTM4LjIgMTAyIDM4LjJ2LjZsLTEwMiA0MS40LTEwMi00MS40di0uNnptODQgMjkxLjFsLTg1IDQyLjV2LTc5LjFsODUtMzguOHY3NS40em0wLTExMmwtMTAyIDQxLjQtMTAyLTQxLjR2LS42bDEwMi0zOC4yIDEwMiAzOC4ydi42em0yNDAgMTEybC04NSA0Mi41di03OS4xbDg1LTM4Ljh2NzUuNHptMC0xMTJsLTEwMiA0MS40LTEwMi00MS40di0uNmwxMDItMzguMiAxMDIgMzguMnYuNnoiPjwvcGF0aD48L3N2Zz4K"
+//! [docs-rs-big]: https://img.shields.io/badge/docs.rs-twitch__api-66c2a5?style=for-the-badge&labelColor=555555&logoColor=white&logo=data:image/svg+xml;base64,PHN2ZyByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiPjxwYXRoIGZpbGw9IiNmNWY1ZjUiIGQ9Ik00ODguNiAyNTAuMkwzOTIgMjE0VjEwNS41YzAtMTUtOS4zLTI4LjQtMjMuNC0zMy43bC0xMDAtMzcuNWMtOC4xLTMuMS0xNy4xLTMuMS0yNS4zIDBsLTEwMCAzNy41Yy0xNC4xIDUuMy0yMy40IDE4LjctMjMuNCAzMy43VjIxNGwtOTYuNiAzNi4yQzkuMyAyNTUuNSAwIDI2OC45IDAgMjgzLjlWMzk0YzAgMTMuNiA3LjcgMjYuMSAxOS45IDMyLjJsMTAwIDUwYzEwLjEgNS4xIDIyLjEgNS4xIDMyLjIgMGwxMDMuOS01MiAxMDMuOSA1MmMxMC4xIDUuMSAyMi4xIDUuMSAzMi4yIDBsMTAwLTUwYzEyLjItNi4xIDE5LjktMTguNiAxOS45LTMyLjJWMjgzLjljMC0xNS05LjMtMjguNC0yMy40LTMzLjd6TTM1OCAyMTQuOGwtODUgMzEuOXYtNjguMmw4NS0zN3Y3My4zek0xNTQgMTA0LjFsMTAyLTM4LjIgMTAyIDM4LjJ2LjZsLTEwMiA0MS40LTEwMi00MS40di0uNnptODQgMjkxLjFsLTg1IDQyLjV2LTc5LjFsODUtMzguOHY3NS40em0wLTExMmwtMTAyIDQxLjQtMTAyLTQxLjR2LS42bDEwMi0zOC4yIDEwMiAzOC4ydi42em0yNDAgMTEybC04NSA0Mi41di03OS4xbDg1LTM4Ljh2NzUuNHptMC0xMTJsLTEwMiA0MS40LTEwMi00MS40di0uNmwxMDItMzguMiAxMDIgMzguMnYuNnoiPjwvcGF0aD48L3N2Zz4K"
 //!
 //! <br>
 //!
@@ -57,8 +59,7 @@
 //!         vec![/* scopes */],
 //!     )
 //!     .await?;
-//!     let ids: &[&twitch_types::UserIdRef] = &["27620241".into()];
-//!     let req = GetChannelInformationRequest::broadcaster_ids(ids);
+//!     let req = GetChannelInformationRequest::broadcaster_ids(&["27620241"]);
 //!     println!(
 //!         "{:?}",
 //!         &client.helix.req_get(req, &token).await?.data[0].title
@@ -97,11 +98,9 @@
 //! | Feature |         |
 //! | -------: | :------- |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>twitch_oauth2</code></span> | Gives [scopes](twitch_oauth2::Scope) for endpoints and topics that are needed to call them. |
-//! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>client</code></span> | Gives a [client abstraction](HttpClient) for endpoints. See for example [`TmiClient`] and [`HelixClient`] |
+//! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>client</code></span> | Gives a [client abstraction](HttpClient) for endpoints. See [`HelixClient`] |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>helix</code></span> | Enables [Helix](helix) endpoints |
-//! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>tmi</code></span> | Enables [TMI](tmi) endpoints |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>eventsub</code></span> | Enables deserializable structs for [EventSub](eventsub) |
-//! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>pubsub</code></span> | Enables deserializable structs for [PubSub](pubsub) |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>hmac</code></span> | Enable [message authentication](eventsub::Event::verify_payload) using HMAC on [EventSub](eventsub) |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>time</code></span> | Enable time utilities on [Timestamp](types::Timestamp) |
 //! | <span class="module-item stab portability" style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>all</code></span> | Enables all above features. Do not use this in production, it's better if you specify exactly what you need |
@@ -124,10 +123,12 @@ pub use twitch_types as types;
 
 #[cfg(feature = "helix")]
 pub mod helix;
-#[cfg(feature = "tmi")]
-pub mod tmi;
 
-#[cfg(any(feature = "pubsub", feature = "tpm"))]
+#[cfg(feature = "pubsub")]
+#[deprecated(
+    since = "0.7.0",
+    note = "use `EventSub` instead, see https://discuss.dev.twitch.com/t/legacy-pubsub-deprecation-and-shutdown-timeline/58043"
+)]
 pub mod pubsub;
 
 #[cfg(feature = "eventsub")]
@@ -136,13 +137,6 @@ pub mod eventsub;
 #[cfg(all(feature = "helix", feature = "client"))]
 #[doc(inline)]
 pub use crate::helix::HelixClient;
-#[cfg(all(feature = "tmi", feature = "client"))]
-#[doc(inline)]
-#[deprecated(
-    note = "All TMI functionality has been implemented with helix endpoint Get Chatters"
-)]
-#[allow(deprecated)]
-pub use crate::tmi::TmiClient;
 
 /// Extra types not defined in [`twitch_types`]
 pub mod extra;
@@ -160,12 +154,7 @@ pub use client::Client as HttpClient;
 #[cfg(feature = "client")]
 pub use client::DummyHttpClient;
 
-#[cfg(any(
-    feature = "helix",
-    feature = "tmi",
-    feature = "pubsub",
-    feature = "eventsub"
-))]
+#[cfg(any(feature = "helix", feature = "pubsub", feature = "eventsub"))]
 /// Generate a url with a default if `mock_api` feature is disabled, or env var is not defined or is invalid utf8
 macro_rules! mock_env_url {
     ($var:literal, $default:expr $(,)?) => {
@@ -193,12 +182,6 @@ macro_rules! mock_env_url {
 #[cfg(feature = "helix")]
 pub static TWITCH_HELIX_URL: once_cell::sync::Lazy<url::Url> =
     mock_env_url!("TWITCH_HELIX_URL", "https://api.twitch.tv/helix/");
-/// Location of Twitch TMI
-///
-/// Can be overriden when feature `mock_api` is enabled with environment variable `TWITCH_TMI_URL`.
-#[cfg(feature = "tmi")]
-pub static TWITCH_TMI_URL: once_cell::sync::Lazy<url::Url> =
-    mock_env_url!("TWITCH_TMI_URL", "https://tmi.twitch.tv/");
 /// Location to twitch PubSub
 ///
 /// Can be overriden when feature `mock_api` is enabled with environment variable `TWITCH_PUBSUB_URL`.
@@ -229,7 +212,7 @@ pub static TWITCH_EVENTSUB_WEBSOCKET_URL: once_cell::sync::Lazy<url::Url> = mock
 /// ```
 ///
 /// See [`client`] for implemented clients, you can also define your own if needed.
-#[cfg(all(feature = "client", any(feature = "helix", feature = "tmi")))]
+#[cfg(all(feature = "client", feature = "helix"))]
 #[derive(Clone)]
 #[non_exhaustive]
 pub struct TwitchClient<'a, C>
@@ -237,64 +220,41 @@ where C: HttpClient + 'a {
     /// Helix endpoint. See [`helix`]
     #[cfg(feature = "helix")]
     pub helix: HelixClient<'a, C>,
-    /// TMI endpoint. See [`tmi`]
-    #[cfg(feature = "tmi")]
-    #[allow(deprecated)]
-    pub tmi: TmiClient<'a, C>,
 }
 
-#[cfg(all(feature = "client", any(feature = "helix", feature = "tmi")))]
+#[cfg(all(feature = "client", feature = "helix"))]
 impl<C: HttpClient + 'static> TwitchClient<'static, C> {
     /// Create a new [`TwitchClient`]
-    #[cfg(any(feature = "helix", feature = "tmi"))]
-    pub fn new() -> TwitchClient<'static, C>
+    #[cfg(feature = "helix")]
+    pub fn new() -> Self
     where C: Clone + client::ClientDefault<'static> {
         let client = C::default_client();
         Self::with_client(client)
     }
 }
 
-#[cfg(all(feature = "client", any(feature = "helix", feature = "tmi")))]
+#[cfg(all(feature = "client", feature = "helix"))]
 impl<C: HttpClient + client::ClientDefault<'static> + 'static> Default
     for TwitchClient<'static, C>
 {
     fn default() -> Self { Self::new() }
 }
 
-#[cfg(all(feature = "client", any(feature = "helix", feature = "tmi")))]
+#[cfg(all(feature = "client", feature = "helix"))]
 impl<'a, C: HttpClient + 'a> TwitchClient<'a, C> {
     /// Create a new [`TwitchClient`] with an existing [`HttpClient`]
-    #[cfg_attr(
-        nightly,
-        doc(cfg(all(feature = "client", any(feature = "helix", feature = "tmi"))))
-    )]
-    #[cfg(any(feature = "helix", feature = "tmi"))]
-    pub fn with_client(client: C) -> TwitchClient<'a, C>
+    #[cfg_attr(nightly, doc(cfg(all(feature = "client", feature = "helix"))))]
+    #[cfg(feature = "helix")]
+    pub const fn with_client(client: C) -> Self
     where C: Clone + 'a {
-        // FIXME: This Clone is not used when only using one of the endpoints
-        #[allow(deprecated)]
         TwitchClient {
-            #[cfg(feature = "tmi")]
-            tmi: TmiClient::with_client(client.clone()),
             #[cfg(feature = "helix")]
             helix: HelixClient::with_client(client),
         }
     }
 
     /// Retrieve a reference of the [`HttpClient`] inside this [`TwitchClient`]
-    pub fn get_client(&self) -> &C {
-        #[cfg(feature = "helix")]
-        {
-            self.helix.get_client()
-        }
-        #[cfg(not(feature = "helix"))]
-        {
-            #[cfg(feature = "tmi")]
-            {
-                self.tmi.get_client()
-            }
-        }
-    }
+    pub const fn get_client(&self) -> &C { self.helix.get_client() }
 }
 
 /// A deserialization error
@@ -440,8 +400,12 @@ where
     deserializer.deserialize_any(Inner(std::marker::PhantomData))
 }
 
+/// Helper functions for tests
 #[cfg(test)]
 pub mod tests {
+    /// Checks that `val` can be serialized and deserialized to `T` with JSON and CBOR.
+    ///
+    /// In pseudocode, this tests `deserialize(serialize(val))`.
     #[track_caller]
     pub fn roundtrip<T: serde::de::DeserializeOwned + serde::Serialize>(val: &T) {
         serde_json::from_slice::<T>(&serde_json::to_vec(val).expect("could not make into json"))

@@ -138,7 +138,7 @@ pub struct ContentClassificationLabel {
 
 impl ContentClassificationLabel {
     /// Create a new [`ContentClassificationLabel`]
-    pub fn new(is_enabled: bool, id: types::ContentClassificationId) -> Self {
+    pub const fn new(is_enabled: bool, id: types::ContentClassificationId) -> Self {
         Self { is_enabled, id }
     }
 }
@@ -230,7 +230,7 @@ impl<'a> ModifyChannelInformationBody<'a> {
 }
 
 #[test]
-pub fn t() {
+fn t() {
     let mut body = ModifyChannelInformationBody::new();
     body.content_classification_labels(vec![
         (true, types::ContentClassificationId::SexualThemes).into()

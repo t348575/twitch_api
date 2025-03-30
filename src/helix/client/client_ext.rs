@@ -1,5 +1,6 @@
 //! Convenience functions for [HelixClient]
 #![warn(clippy::future_not_send)]
+use futures::{StreamExt, TryStreamExt};
 use std::borrow::Cow;
 
 use crate::helix::{self, ClientRequestError, HelixClient};
@@ -43,21 +44,73 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     }
 
     /// Get multiple [User](helix::users::User)s from user ids.
-    pub async fn get_users_from_ids<T>(
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{helix, types};
+    /// use futures::TryStreamExt;
+    ///
+    /// let users: Vec<helix::users::User> = client
+    ///     .get_users_from_ids(&["1234", "4321"][..].into(), &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_users_from_ids<T>(
         &'client self,
-        ids: impl AsRef<[&types::UserIdRef]> + Send,
-        token: &T,
-    ) -> Result<Option<helix::users::User>, ClientError<C>>
+        ids: &'client types::Collection<'client, types::UserId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::users::User, ClientError<C>>> + Send + Unpin + 'client
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        let ids = ids.as_ref();
-        if ids.len() > 100 {
-            return Err(ClientRequestError::Custom("too many IDs, max 100".into()));
-        }
-        self.req_get(helix::users::GetUsersRequest::ids(ids), token)
-            .await
-            .map(|response| response.first())
+        futures::stream::iter(ids.chunks(100))
+            .map(move |c| {
+                let req = helix::users::GetUsersRequest::ids(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(|resp| futures::stream::iter(resp.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
+    }
+
+    /// Get multiple [User](helix::users::User)s from user logins/nicknames.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{helix, types};
+    /// use futures::TryStreamExt;
+    ///
+    /// let users: Vec<helix::users::User> = client
+    ///     .get_users_from_ids(&["twitchdev", "justintv"][..].into(), &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_users_from_logins<T>(
+        &'client self,
+        ids: &'client types::Collection<'client, types::UserName>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::users::User, ClientError<C>>> + Send + Unpin + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        futures::stream::iter(ids.chunks(100))
+            .map(move |c| {
+                let req = helix::users::GetUsersRequest::logins(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(|resp| futures::stream::iter(resp.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
     }
 
     /// Get [ChannelInformation](helix::channels::ChannelInformation) from a broadcasters login
@@ -105,30 +158,214 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
     /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
     /// use twitch_api::{helix, types};
+    /// use futures::TryStreamExt;
     ///
-    /// let ids: &[&types::UserIdRef] = &["1234".into(), "4321".into()];
     /// let chatters: Vec<helix::channels::ChannelInformation> = client
-    ///    .get_channels_from_ids(ids, &token).await?;
+    ///     .get_channels_from_ids(&["1234", "4321"][..].into(), &token).try_collect().await?;
     /// # Ok(()) }
     /// ```
-    pub async fn get_channels_from_ids<'b, T>(
+    pub fn get_channels_from_ids<T>(
         &'client self,
-        ids: impl AsRef<[&types::UserIdRef]> + Send,
-        token: &T,
-    ) -> Result<Vec<helix::channels::ChannelInformation>, ClientError<C>>
+        ids: &'client types::Collection<'client, types::UserId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::channels::ChannelInformation, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        let ids = ids.as_ref();
-        if ids.len() > 100 {
-            return Err(ClientRequestError::Custom("too many IDs, max 100".into()));
-        }
+        futures::stream::iter(ids.chunks(100))
+            .map(move |c| {
+                let req = helix::channels::GetChannelInformationRequest::broadcaster_ids(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(|resp| futures::stream::iter(resp.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
+    }
+
+    /// Get multiple [Stream](helix::streams::Stream)s from user ids.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let live: Vec<helix::streams::Stream> = client
+    ///     .get_streams_from_ids(&["123456", "987654"][..].into(), &token)
+    ///     .try_collect()
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_streams_from_ids<T>(
+        &'client self,
+        ids: &'client types::Collection<'client, types::UserId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::streams::Stream, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let ids = ids.chunks(100).collect::<Vec<_>>();
+        futures::stream::iter(ids.into_iter().map(move |c| {
+            let req = helix::streams::GetStreamsRequest::user_ids(c).first(100);
+            make_stream(req, token, self, std::collections::VecDeque::from)
+        }))
+        .flatten_unordered(None)
+    }
+
+    /// Get multiple [Stream](helix::streams::Stream)s from user logins.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let live: Vec<helix::streams::Stream> = client
+    ///     .get_streams_from_logins(&["twitchdev", "justinfan"][..].into(), &token)
+    ///     .try_collect()
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_streams_from_logins<T>(
+        &'client self,
+        logins: &'client types::Collection<'client, types::UserName>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::streams::Stream, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let logins = logins.chunks(100).collect::<Vec<_>>();
+        futures::stream::iter(logins.into_iter().map(move |c| {
+            let req = helix::streams::GetStreamsRequest::user_logins(c).first(100);
+            make_stream(req, token, self, std::collections::VecDeque::from)
+        }))
+        .flatten_unordered(None)
+    }
+
+    /// Gets the channel’s stream key.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use twitch_oauth2::TwitchToken;
+    ///
+    /// // use the associated user-id  with the user-access token
+    /// let user_id = token.user_id().expect("no user-id set in token");
+    /// let key: twitch_types::StreamKey = client.get_stream_key(user_id, &token).await?;
+    /// # Ok(()) }
+    /// ```
+    pub async fn get_stream_key<'b, T>(
+        &'client self,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + 'b + Send,
+        token: &T,
+    ) -> Result<types::StreamKey, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
         self.req_get(
-            helix::channels::GetChannelInformationRequest::broadcaster_ids(ids),
+            helix::streams::GetStreamKeyRequest::broadcaster_id(broadcaster_id),
             token,
         )
         .await
-        .map(|response| response.data)
+        .map(|res| res.data.stream_key)
+    }
+
+    /// Adds a marker to a live stream.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use twitch_oauth2::TwitchToken;
+    ///
+    /// // use the associated user-id  with the user-access token
+    /// let user_id = token.user_id().expect("no user-id set in token");
+    /// let marker: helix::streams::CreatedStreamMarker = client.create_stream_marker(user_id, "my description", &token).await?;
+    /// # Ok(()) }
+    /// ```
+    pub async fn create_stream_marker<'b, T>(
+        &'client self,
+        user_id: impl types::IntoCow<'b, types::UserIdRef> + 'b + Send,
+        description: impl Into<Cow<'b, str>> + Send,
+        token: &T,
+    ) -> Result<helix::streams::CreatedStreamMarker, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        self.req_post(
+            helix::streams::CreateStreamMarkerRequest::new(),
+            helix::streams::CreateStreamMarkerBody::new(user_id, description),
+            token,
+        )
+        .await
+        .map(|res| res.data)
+    }
+
+    /// Gets a list of markers from the specified VOD/video.
+    ///
+    /// Markers are grouped per creator and video.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let groups: Vec<helix::streams::StreamMarkerGroup> = client
+    ///     .get_stream_markers_from_video("1234", &token)
+    ///     .try_collect()
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_stream_markers_from_video<'b: 'client, T>(
+        &'client self,
+        video_id: impl types::IntoCow<'b, types::VideoIdRef> + 'b,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::streams::StreamMarkerGroup, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::streams::GetStreamMarkersRequest::video_id(video_id).first(100);
+
+        make_stream(req, token, self, std::collections::VecDeque::from)
     }
 
     /// Get chatters in a stream [Chatter][helix::chat::Chatter]
@@ -149,10 +386,8 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let chatters: Vec<helix::chat::Chatter> = client
     ///    .get_chatters("1234", "4321", 1000, &token)
     ///    .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
-    #[cfg(feature = "unsupported")]
     pub fn get_chatters<T>(
         &'client self,
         broadcaster_id: impl Into<&'client types::UserIdRef>,
@@ -187,7 +422,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let categories: Vec<helix::search::Category> = client
     ///     .search_categories("Fortnite", &token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn search_categories<T>(
@@ -221,7 +455,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let channel: Vec<helix::search::Channel> = client
     ///     .search_channels("twitchdev", false, &token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn search_channels<'b, T>(
@@ -260,7 +493,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let followers: Vec<helix::users::FollowRelationship> = client
     ///     .get_follow_relationships(Some("1234".into()), None, &token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     #[deprecated(
@@ -308,7 +540,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let channels: Vec<helix::streams::Stream> = client
     ///     .get_followed_streams(&token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_followed_streams<T>(
@@ -321,8 +552,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        use futures::StreamExt;
-
         let user_id = match token
             .user_id()
             .ok_or_else(|| ClientRequestError::Custom("no user_id found on token".into()))
@@ -350,7 +579,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let subs: Vec<helix::subscriptions::BroadcasterSubscription> = client
     ///     .get_broadcaster_subscriptions(&token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_broadcaster_subscriptions<T>(
@@ -364,8 +592,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        use futures::StreamExt;
-
         let user_id = match token
             .user_id()
             .ok_or_else(|| ClientRequestError::Custom("no user_id found on token".into()))
@@ -394,7 +620,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let moderators: Vec<helix::moderation::Moderator> = client
     ///     .get_moderators_in_channel_from_id("twitchdev", &token)
     ///     .try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_moderators_in_channel_from_id<'b: 'client, T>(
@@ -427,7 +652,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// use futures::TryStreamExt;
     ///
     /// let moderators: Vec<helix::moderation::BannedUser> = client.get_banned_users_in_channel_from_id("twitchdev", &token).try_collect().await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_banned_users_in_channel_from_id<'b: 'client, T>(
@@ -443,6 +667,75 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     {
         let req = helix::moderation::GetBannedUsersRequest::broadcaster_id(broadcaster_id);
 
+        make_stream(req, token, self, std::collections::VecDeque::from)
+    }
+
+    /// Gets a list of unban requests for a broadcaster’s channel. [Get Unban Requests](helix::moderation::GetUnbanRequestsRequest)
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use futures::TryStreamExt;
+    ///
+    /// let requests: Vec<helix::moderation::UnbanRequest> = client.get_unban_requests("1234", "5678", helix::moderation::UnbanRequestStatus::Pending, &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_unban_requests<'b: 'client, T>(
+        &'client self,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + 'b,
+        moderator_id: impl types::IntoCow<'b, types::UserIdRef> + 'b,
+        status: helix::moderation::UnbanRequestStatus,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::moderation::UnbanRequest, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req =
+            helix::moderation::GetUnbanRequestsRequest::new(broadcaster_id, moderator_id, status);
+
+        make_stream(req, token, self, std::collections::VecDeque::from)
+    }
+
+    /// Gets a list of channels that the specified user has moderator privileges in. [Get Moderated Channels](helix::moderation::GetModeratedChannelsRequest)
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use twitch_oauth2::TwitchToken;
+    /// use futures::TryStreamExt;
+    ///
+    /// // use the associated user-id  with the user-access token
+    /// let user_id = token.user_id().expect("no user-id set in token");
+    /// let requests: Vec<helix::moderation::ModeratedChannel> = client.get_moderated_channels(user_id, &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_moderated_channels<'b: 'client, T>(
+        &'client self,
+        user_id: impl types::IntoCow<'b, types::UserIdRef> + 'b,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::moderation::ModeratedChannel, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::moderation::GetModeratedChannelsRequest::user_id(user_id);
         make_stream(req, token, self, std::collections::VecDeque::from)
     }
 
@@ -509,7 +802,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     ///     .get_followed_channels("1234", &token)
     ///     .try_collect()
     ///     .await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_followed_channels<'b: 'client, T>(
@@ -556,29 +848,39 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
         Ok(resp.data.total)
     }
 
-    /// Get games by ID. Can only be at max 100 ids.
-    pub async fn get_games_by_id<T>(
+    /// Get games by ID.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let games: Vec<helix::games::Game> = client
+    ///     .get_games_by_id(&["509658", "32982", "27471"][..].into(), &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_games_by_id<T>(
         &'client self,
-        ids: impl AsRef<[&'client types::CategoryIdRef]> + Send,
-        token: &T,
-    ) -> Result<std::collections::HashMap<types::CategoryId, helix::games::Game>, ClientError<C>>
+        ids: &'client types::Collection<'client, types::CategoryId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::games::Game, ClientError<C>>> + Send + Unpin + 'client
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        let ids = ids.as_ref();
-        if ids.len() > 100 {
-            return Err(ClientRequestError::Custom("too many IDs, max 100".into()));
-        }
-
-        let resp = self
-            .req_get(helix::games::GetGamesRequest::ids(ids), token)
-            .await?;
-
-        Ok(resp
-            .data
-            .into_iter()
-            .map(|g: helix::games::Game| (g.id.clone(), g))
-            .collect())
+        futures::stream::iter(ids.chunks(100))
+            .map(move |c| {
+                let req = helix::games::GetGamesRequest::ids(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(|resp| futures::stream::iter(resp.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
     }
 
     /// Block a user
@@ -665,13 +967,35 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
             .data)
     }
 
+    #[cfg(feature = "beta")]
+    /// Warn a user
+    pub async fn warn_chat_user<'b, T>(
+        &'client self,
+        target_user_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        reason: impl Into<&'b str> + Send,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        moderator_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        token: &T,
+    ) -> Result<helix::moderation::WarnChatUser, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        Ok(self
+            .req_post(
+                helix::moderation::WarnChatUserRequest::new(broadcaster_id, moderator_id),
+                helix::moderation::WarnChatUserBody::new(target_user_id, reason.into()),
+                token,
+            )
+            .await?
+            .data)
+    }
+
     // FIXME: Example should use https://github.com/twitch-rs/twitch_api/issues/162
     /// Get all scheduled streams in a channel.
     ///
     /// # Notes
     ///
     /// Make sure to limit the data here using [`try_take_while`](futures::stream::TryStreamExt::try_take_while), otherwise this will never end on recurring scheduled streams.
-    ///
     ///
     /// # Examples
     ///
@@ -691,7 +1015,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     ///     })
     ///     .try_collect()
     ///     .await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_channel_schedule<'b: 'client, T>(
@@ -756,18 +1079,114 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
         }
     }
 
-    /// Get emotes in emote set
-    pub async fn get_emote_sets<T>(
+    /// Get all emotes accessible to the user in all chats.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use twitch_oauth2::TwitchToken;
+    /// use futures::TryStreamExt;
+    ///
+    /// // use the associated user-id with the user-access token
+    /// let user_id = token.user_id().expect("no user-id set in token");
+    /// let requests: Vec<helix::chat::UserEmote> = client.get_user_emotes(user_id, &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_user_emotes<'b: 'client, T>(
         &'client self,
-        emote_sets: impl AsRef<[&types::EmoteSetIdRef]> + Send,
-        token: &T,
-    ) -> Result<Vec<helix::chat::get_emote_sets::Emote>, ClientError<C>>
+        user_id: impl types::IntoCow<'b, types::UserIdRef> + 'b,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::chat::UserEmote, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        let emote_sets = emote_sets.as_ref();
-        let req = helix::chat::GetEmoteSetsRequest::emote_set_ids(emote_sets);
-        Ok(self.req_get(req, token).await?.data)
+        let req = helix::chat::GetUserEmotesRequest::user_id(user_id);
+        make_stream(req, token, self, std::collections::VecDeque::from)
+    }
+
+    /// Get all emotes accessible to the user in a channel.
+    ///
+    /// This will include "follow" emotes if the user isn't subscribed but following.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    /// use twitch_oauth2::TwitchToken;
+    /// use futures::TryStreamExt;
+    ///
+    /// // use the associated user-id with the user-access token
+    /// let user_id = token.user_id().expect("no user-id set in token");
+    /// let requests: Vec<helix::chat::UserEmote> = client.get_user_emotes_in_channel(user_id, "1234", &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_user_emotes_in_channel<'b: 'client, 'c: 'client, T>(
+        &'client self,
+        user_id: impl types::IntoCow<'b, types::UserIdRef> + 'b,
+        channel_id: impl types::IntoCow<'c, types::UserIdRef> + 'c,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::chat::UserEmote, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let mut req = helix::chat::GetUserEmotesRequest::user_id(user_id);
+        req.broadcaster_id = Some(twitch_types::IntoCow::into_cow(channel_id));
+        make_stream(req, token, self, std::collections::VecDeque::from)
+    }
+
+    /// Get emotes in emote sets
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let emotes: Vec<helix::chat::get_emote_sets::Emote> = client
+    ///     .get_emote_sets(&["0"][..].into(), &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_emote_sets<T>(
+        &'client self,
+        emote_sets: &'client types::Collection<'client, types::EmoteSetId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::chat::get_emote_sets::Emote, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        futures::stream::iter(emote_sets.chunks(25))
+            .map(move |c| {
+                let req = helix::chat::GetEmoteSetsRequest::emote_set_ids(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(|r| futures::stream::iter(r.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
     }
 
     /// Get a broadcaster's chat settings
@@ -806,6 +1225,41 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
             .await
             .map_err(ClientExtError::ClientError)?
             .data)
+    }
+
+    /// Send a chat message
+    pub async fn send_chat_message<'b, T>(
+        &'client self,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        sender_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        message: impl Into<&'b str> + Send,
+        token: &T,
+    ) -> Result<helix::chat::SendChatMessageResponse, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::chat::SendChatMessageRequest::new();
+        let body = helix::chat::SendChatMessageBody::new(broadcaster_id, sender_id, message.into());
+        Ok(self.req_post(req, body, token).await?.data)
+    }
+
+    /// Send a chat message reply
+    pub async fn send_chat_message_reply<'b, T>(
+        &'client self,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        sender_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        reply_parent_message_id: impl types::IntoCow<'b, types::MsgIdRef> + Send + 'b,
+        message: impl Into<&'b str> + Send,
+        token: &T,
+    ) -> Result<helix::chat::SendChatMessageResponse, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::chat::SendChatMessageRequest::new();
+        let mut body =
+            helix::chat::SendChatMessageBody::new(broadcaster_id, sender_id, message.into());
+        body.reply_parent_message_id = Some(reply_parent_message_id.into_cow());
+        Ok(self.req_post(req, body, token).await?.data)
     }
 
     /// Delete a specific chat message
@@ -865,25 +1319,7 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
         Ok(self.req_delete(req, token).await?.data)
     }
 
-    /// Get a users chat color
-    pub async fn get_user_chat_color<T>(
-        &'client self,
-        user_id: impl Into<&types::UserIdRef> + Send,
-        token: &T,
-    ) -> Result<Option<helix::chat::UserChatColor>, ClientError<C>>
-    where
-        T: TwitchToken + Send + Sync + ?Sized,
-    {
-        Ok(self
-            .req_get(
-                helix::chat::GetUserChatColorRequest::user_ids(&[user_id.into()][..]),
-                token,
-            )
-            .await?
-            .first())
-    }
-
-    /// Get a users chat color
+    /// Update a user's chat color
     pub async fn update_user_chat_color<'b, T>(
         &'client self,
         user_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
@@ -901,22 +1337,130 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
         Ok(self.req_put(req, helix::EmptyBody, token).await?.data)
     }
 
-    /// Get multiple users chat colors
-    pub async fn get_users_chat_colors<T>(
+    /// Get a user's chat color
+    ///
+    /// [`None`] is returned if the user never set their color in the settings.
+    pub async fn get_user_chat_color<T>(
         &'client self,
-        user_ids: impl AsRef<[&types::UserIdRef]> + Send,
+        user_id: impl Into<&types::UserIdRef> + Send,
         token: &T,
-    ) -> Result<Vec<helix::chat::UserChatColor>, ClientError<C>>
+    ) -> Result<Option<helix::chat::UserChatColor>, ClientError<C>>
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        let user_ids = user_ids.as_ref();
-        if user_ids.len() > 100 {
-            return Err(ClientRequestError::Custom("too many IDs, max 100".into()));
-        }
-        let req = helix::chat::GetUserChatColorRequest::user_ids(user_ids);
+        Ok(self
+            .req_get(
+                helix::chat::GetUserChatColorRequest::user_ids(&user_id.into()),
+                token,
+            )
+            .await?
+            .first())
+    }
+
+    /// Get multiple users' chat colors
+    ///
+    /// Users that never set their color in the settings are not returned.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::{types, helix};
+    /// use futures::TryStreamExt;
+    ///
+    /// let colors: Vec<helix::chat::UserChatColor> = client
+    ///     .get_users_chat_colors(&["1234"][..].into(), &token).try_collect().await?;
+    /// # Ok(()) }
+    /// ```
+    pub fn get_users_chat_colors<T>(
+        &'client self,
+        user_ids: &'client types::Collection<'client, types::UserId>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<helix::chat::UserChatColor, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        futures::stream::iter(user_ids.chunks(100))
+            .map(move |c| {
+                let req = helix::chat::GetUserChatColorRequest::user_ids(c);
+                futures::stream::once(self.req_get(req, token)).boxed()
+            })
+            .flatten_unordered(None)
+            .map_ok(move |o| futures::stream::iter(o.data.into_iter().map(Ok)))
+            .try_flatten_unordered(None)
+    }
+
+    /// Update the user's description
+    ///
+    /// The user ID in the OAuth token identifies the user whose information you want to update.
+    pub async fn update_user_description<'b, T>(
+        &'client self,
+        description: impl Into<Cow<'b, str>> + Send,
+        token: &T,
+    ) -> Result<helix::users::User, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::users::UpdateUserRequest::description(description);
+
+        Ok(self.req_put(req, helix::EmptyBody, token).await?.data)
+    }
+
+    /// Gets a list of all extensions (both active and inactive) that the broadcaster has installed.
+    ///
+    /// The user ID in the access token identifies the broadcaster.
+    pub async fn get_user_extensions<'b, T>(
+        &'client self,
+        token: &T,
+    ) -> Result<Vec<helix::users::Extension>, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::users::GetUserExtensionsRequest::new();
 
         Ok(self.req_get(req, token).await?.data)
+    }
+
+    /// Gets the active extensions that the broadcaster has installed for each configuration.
+    ///
+    /// The user ID in the access token identifies the broadcaster.
+    pub async fn get_user_active_extensions<'b, T>(
+        &'client self,
+        token: &T,
+    ) -> Result<helix::users::ExtensionConfiguration, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::users::GetUserActiveExtensionsRequest::new();
+
+        Ok(self.req_get(req, token).await?.data)
+    }
+
+    /// Retrieves the active shared chat session for a channel
+    ///
+    /// [`None`] is returned if no shared chat session is active.
+    pub async fn get_shared_chat_session<'b, T>(
+        &'client self,
+        broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
+        token: &T,
+    ) -> Result<Option<helix::chat::SharedChatSession>, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        Ok(self
+            .req_get(
+                helix::chat::GetSharedChatSessionRequest::broadcaster_id(broadcaster_id),
+                token,
+            )
+            .await?
+            .first())
     }
 
     /// Add a channel moderator
@@ -1041,7 +1585,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// let rewards: Vec<helix::points::CustomReward> = client
     ///     .get_all_custom_rewards("1234", true, &token)
     ///     .await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub async fn get_all_custom_rewards<'b, T>(
@@ -1053,11 +1596,20 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     where
         T: TwitchToken + Send + Sync + ?Sized,
     {
-        self.get_custom_rewards(broadcaster_id, only_managable_rewards, &[], token)
-            .await
+        self.get_custom_rewards(
+            broadcaster_id,
+            only_managable_rewards,
+            &types::Collection::EMPTY,
+            token,
+        )
+        .await
     }
 
     /// Get specific custom rewards, see [`get_all_custom_rewards`](HelixClient::get_all_custom_rewards) to get all rewards
+    ///
+    /// # Notes
+    ///
+    /// Takes a max of 50 ids
     ///
     /// # Examples
     ///
@@ -1070,18 +1622,17 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     /// use twitch_api::helix;
     ///
     /// let rewards: Vec<helix::points::CustomReward> = client
-    ///     .get_custom_rewards("1234", true, &["8969ec47-55b6-4559-a8fe-3f1fc4e6fe58".into()], &token)
+    ///     .get_custom_rewards("1234", true, &["8969ec47-55b6-4559-a8fe-3f1fc4e6fe58"][..].into(), &token)
     ///     .await?;
-    ///
     /// # Ok(()) }
     /// ```
+    // XXX: This function is useless as a stream, since you can never have more than 50 rewards on a channel
     pub async fn get_custom_rewards<'b, T>(
         &'client self,
         broadcaster_id: impl types::IntoCow<'b, types::UserIdRef> + Send + 'b,
         only_managable_rewards: bool,
-        // FIXME: This should be `impl AsRef<[&'b T]> + 'b`
-        ids: &'b [&'b types::RewardIdRef],
-        token: &T,
+        ids: &'b types::Collection<'b, types::RewardId>,
+        token: &'client T,
     ) -> Result<Vec<helix::points::CustomReward>, ClientError<C>>
     where
         T: TwitchToken + Send + Sync + ?Sized,
@@ -1090,11 +1641,76 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
             .req_get(
                 helix::points::GetCustomRewardRequest::broadcaster_id(broadcaster_id)
                     .only_manageable_rewards(only_managable_rewards)
-                    .ids(ids),
+                    .ids(ids.clone()),
                 token,
             )
             .await?
             .data)
+    }
+
+    /// Get information about Twitch content classification labels, see [`get_content_classification_labels_for_locale`](HelixClient::get_content_classification_labels_for_locale) to get the labels in a specific locale.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    ///
+    /// let labels: Vec<helix::ccls::ContentClassificationLabel> = client
+    ///     .get_content_classification_labels(&token)
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    pub async fn get_content_classification_labels<'b, T>(
+        &'client self,
+        token: &'client T,
+    ) -> Result<Vec<helix::ccls::ContentClassificationLabel>, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        self.req_get(
+            helix::ccls::GetContentClassificationLabelsRequest::new(),
+            token,
+        )
+        .await
+        .map(|res| res.data)
+    }
+
+    /// Get information about Twitch content classification labels for a specific locale.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let token = twitch_oauth2::AccessToken::new("validtoken".to_string());
+    /// # let token = twitch_oauth2::UserToken::from_existing(&client, token, None, None).await?;
+    /// use twitch_api::helix;
+    ///
+    /// let labels: Vec<helix::ccls::ContentClassificationLabel> = client
+    ///     .get_content_classification_labels_for_locale("fi-FI", &token)
+    ///     .await?;
+    /// # Ok(()) }
+    /// ```
+    pub async fn get_content_classification_labels_for_locale<'b, T>(
+        &'client self,
+        locale: impl Into<Cow<'b, str>> + 'b + Send,
+        token: &'client T,
+    ) -> Result<Vec<helix::ccls::ContentClassificationLabel>, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        self.req_get(
+            helix::ccls::GetContentClassificationLabelsRequest::locale(locale),
+            token,
+        )
+        .await
+        .map(|res| res.data)
     }
 
     #[cfg(feature = "eventsub")]
@@ -1142,8 +1758,9 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     ///
     /// # Notes
     ///
-    /// The return item is a struct [`EventSubSubscriptions`](helix::eventsub::EventSubSubscriptions) which contains the subscriptions.
-    /// See the example for getting only the subscriptions
+    /// The return item is a struct [`EventSubSubscriptions`](helix::eventsub::EventSubSubscriptions)
+    /// which contains a field with all the subscriptions.
+    /// See the example for collecting all _specific_ subscriptions
     ///
     /// # Examples
     ///
@@ -1171,7 +1788,6 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
     ///     .try_flatten()
     ///     .try_collect()
     ///     .await?;
-    ///
     /// # Ok(()) }
     /// ```
     pub fn get_eventsub_subscriptions<'b: 'client, T>(
@@ -1201,6 +1817,295 @@ impl<'client, C: crate::HttpClient + Sync + 'client> HelixClient<'client, C> {
             vec.push_front(r);
             vec
         })
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Get all [Conduits](crate::eventsub::Conduit) for the Twitch Developer Application
+    /// associated with this token
+    ///
+    /// # Notes
+    ///
+    /// The token must be an App Access Token
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    ///
+    /// let conduits = client.get_conduits(&token).await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub async fn get_conduits<'b: 'client, T>(
+        &'client self,
+        token: &'client T,
+    ) -> Result<Vec<crate::eventsub::Conduit>, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        self.req_get(helix::eventsub::GetConduitsRequest {}, token)
+            .await
+            .map(|response| response.data)
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Create a [Conduit](crate::eventsub) for the Twitch Developer Application
+    /// associated with this token
+    ///
+    /// # Notes
+    ///
+    /// The token must be an App Access Token
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    ///
+    /// let shard_count = 5;
+    /// let created_conduit = client.create_conduit(shard_count, &token).await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub async fn create_conduit<T>(
+        &'client self,
+        shard_count: usize,
+        token: &'client T,
+    ) -> Result<crate::eventsub::Conduit, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::eventsub::CreateConduitRequest {};
+        let body = helix::eventsub::CreateConduitBody::new(shard_count);
+
+        self.req_post(req, body, token)
+            .await
+            .map(|response| response.data)
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Gets a list of all shards for a conduit.
+    ///
+    /// # Notes
+    ///
+    /// The token must be an App Access Token
+    ///
+    /// # Examples
+    ///
+    /// ## Get all shards from the given conduit
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    /// use futures::TryStreamExt;
+    ///
+    /// let conduit_id = "26b1c993-bfcf-44d9-b876-379dacafe75a";
+    /// let status = None;
+    /// let all_shards: Vec<eventsub::ShardResponse> = client
+    ///     .get_conduit_shards(conduit_id, status, &token)
+    ///     .try_collect().await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    ///
+    /// ## Get all enabled shards from the given conduit
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    /// use futures::TryStreamExt;
+    ///
+    /// let conduit_id = "26b1c993-bfcf-44d9-b876-379dacafe75a";
+    /// let status = eventsub::ShardStatus::Enabled;
+    /// let enabled_shards: Vec<eventsub::ShardResponse> = client
+    ///     .get_conduit_shards(conduit_id, status, &token)
+    ///     .try_collect().await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub fn get_conduit_shards<'b: 'client, T>(
+        &'client self,
+        conduit_id: impl types::IntoCow<'b, types::ConduitIdRef> + 'b,
+        status: impl Into<Option<crate::eventsub::ShardStatus>>,
+        token: &'client T,
+    ) -> impl futures::Stream<Item = Result<crate::eventsub::ShardResponse, ClientError<C>>>
+           + Send
+           + Unpin
+           + 'client
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::eventsub::GetConduitShardsRequest {
+            conduit_id: conduit_id.into_cow(),
+            status: status.into(),
+            after: None,
+        };
+
+        make_stream(req, token, self, std::collections::VecDeque::from)
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Updates a [conduit](crate::eventsub::Conduit)’s shard count..
+    ///
+    /// # Notes
+    ///
+    /// To delete shards, update the count to a lower number, and the shards above the count will be deleted.
+    /// For example, if the existing shard count is 100, by resetting shard count to 50, shards 50-99 are disabled.
+    ///
+    /// The token must be an App Access Token.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    ///
+    /// // The conduit ID of a previously created Conduit
+    /// let conduit_id = "bb7a1803-eb03-41ef-a1ab-e9242e72053e";
+    /// let shard_count = 5;
+    /// let updated: eventsub::Conduit = client
+    ///     .update_conduit(conduit_id, shard_count, &token)
+    ///     .await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub async fn update_conduit<'b: 'client, T>(
+        &'client self,
+        conduit_id: impl types::IntoCow<'b, types::ConduitIdRef> + 'b + Send,
+        shard_count: usize,
+        token: &'client T,
+    ) -> Result<crate::eventsub::Conduit, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::eventsub::UpdateConduitRequest::default();
+        let body = helix::eventsub::UpdateConduitBody::new(conduit_id, shard_count);
+
+        self.req_patch(req, body, token)
+            .await
+            .map(|response| response.data)
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Deletes a specified [conduit](crate::eventsub::Conduit).
+    ///
+    /// # Notes
+    ///
+    /// Note that it may take some time for Eventsub subscriptions on a deleted conduit to show as disabled when calling [Get Eventsub Subscriptions][Self::get_eventsub_subscriptions].
+    ///
+    /// The token must be an App Access Token.
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    ///
+    /// // The conduit ID of a previously created Conduit
+    /// let conduit_id = "bb7a1803-eb03-41ef-a1ab-e9242e72053e";
+    /// client
+    ///     .delete_conduit(conduit_id, &token)
+    ///     .await?;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub async fn delete_conduit<'b: 'client, T>(
+        &'client self,
+        conduit_id: impl types::IntoCow<'b, types::ConduitIdRef> + 'b + Send,
+        token: &'client T,
+    ) -> Result<(), ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::eventsub::DeleteConduitRequest::new(conduit_id);
+
+        self.req_delete(req, token).await.map(|_| ())
+    }
+
+    #[cfg(feature = "eventsub")]
+    /// Updates the [Shard](crate::eventsub) for the given [Conduit](crate::eventsub).
+    ///
+    /// This is used to connect a Webhook or Websocket transport to a conduit, which you can read
+    /// more about [here](https://dev.twitch.tv/docs/eventsub/handling-conduit-events/)
+    ///
+    /// # Notes
+    ///
+    /// Shard IDs are indexed starting at 0, so a conduit with a shard_count of 5 will have shards with IDs 0 through 4.
+    ///
+    /// The token must be an App Access Token
+    ///
+    /// # Examples
+    ///
+    /// ```rust, no_run
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let client: helix::HelixClient<'static, twitch_api::client::DummyHttpClient> = helix::HelixClient::default();
+    /// # let client_id = twitch_oauth2::types::ClientId::from_static("your_client_id");
+    /// # let client_secret = twitch_oauth2::types::ClientSecret::from_static("your_client_id");
+    /// # let token = twitch_oauth2::AppAccessToken::get_app_access_token(&client, client_id, client_secret, vec![]).await?;
+    /// use twitch_api::{helix, eventsub};
+    ///
+    /// // The conduit ID of a previously created Conduit
+    /// let conduit_id = "bb7a1803-eb03-41ef-a1ab-e9242e72053e";
+    /// // The session ID of your WebSocket EventSub connection
+    /// let session_id = "AgoQMpdhHZ-dSoyv7NLALgOGHhIGY2VsbC1j";
+    /// let shard = twitch_api::eventsub::Shard::new(
+    ///     "0",
+    ///     twitch_api::eventsub::Transport::websocket(session_id),
+    /// );
+    ///
+    /// let response = client
+    ///     .update_conduit_shards(conduit_id, &[shard], &token)
+    ///     .await;
+    ///
+    /// # Ok(()) }
+    /// ```
+    pub async fn update_conduit_shards<'b: 'client, T>(
+        &'client self,
+        conduit_id: impl types::IntoCow<'b, types::ConduitIdRef> + 'b + Send,
+        shards: impl Into<Cow<'b, [crate::eventsub::Shard]>> + Send,
+        token: &'client T,
+    ) -> Result<helix::eventsub::UpdateConduitShardsResponse, ClientError<C>>
+    where
+        T: TwitchToken + Send + Sync + ?Sized,
+    {
+        let req = helix::eventsub::UpdateConduitShardsRequest::default();
+        let body = helix::eventsub::UpdateConduitShardsBody::new(conduit_id, shards);
+
+        self.req_patch(req, body, token)
+            .await
+            .map(|response| response.data)
     }
 }
 
@@ -1238,7 +2143,7 @@ pub enum ClientExtError<C: crate::HttpClient, E> {
 pub fn make_stream<
     'a,
     C: crate::HttpClient + Send + Sync,
-    T: TwitchToken + Send + Sync + ?Sized + Send + Sync,
+    T: TwitchToken + Send + Sync + ?Sized,
     // FIXME: Why does this have to be clone and debug?
     Req: super::Request
         + super::RequestGet
@@ -1265,7 +2170,6 @@ where
     // I also want to keep allocations low, so std::mem::take is perfect, but that makes get_next not work optimally.
     <Req as super::Request>::Response: Send + Sync + std::fmt::Debug + Clone,
 {
-    use futures::StreamExt;
     enum StateMode<Req: super::Request + super::RequestGet, Item> {
         /// A request needs to be done.
         Req(Option<Req>),
@@ -1282,14 +2186,14 @@ where
     impl<Req: super::Request + super::RequestGet, Item> StateMode<Req, Item> {
         fn take_initial(&mut self) -> Req {
             match self {
-                StateMode::Req(ref mut r) if r.is_some() => std::mem::take(r).expect("oops"),
+                Self::Req(ref mut r) if r.is_some() => std::mem::take(r).expect("oops"),
                 _ => todo!("hmmm"),
             }
         }
 
         fn take_next(&mut self) -> super::Response<Req, <Req as super::Request>::Response> {
             match self {
-                StateMode::Next(ref mut r) if r.is_some() => std::mem::take(r).expect("oops"),
+                Self::Next(ref mut r) if r.is_some() => std::mem::take(r).expect("oops"),
                 _ => todo!("hmmm"),
             }
         }
@@ -1308,12 +2212,11 @@ where
     }
 
     impl<
-            'a,
             C: crate::HttpClient,
             T: TwitchToken + Send + Sync + ?Sized,
             Req: super::Request + super::RequestGet + super::Paginated,
             Item,
-        > State<'a, C, T, Req, Item>
+        > State<'_, C, T, Req, Item>
     {
         /// Process a request, with a given deq
         fn process(
@@ -1321,7 +2224,11 @@ where
             r: super::Response<Req, <Req as super::Request>::Response>,
             d: std::collections::VecDeque<Item>,
         ) -> Self {
-            self.mode = StateMode::Cont(r, d);
+            self.mode = if d.is_empty() {
+                StateMode::Next(Some(r))
+            } else {
+                StateMode::Cont(r, d)
+            };
             self
         }
 

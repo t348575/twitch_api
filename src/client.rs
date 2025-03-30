@@ -149,18 +149,18 @@ pub trait ClientDefault<'a>: Clone + Sized {
 pub struct DummyHttpClient;
 
 impl Client for DummyHttpClient {
-    type Error = DummyHttpClient;
+    type Error = Self;
 
     fn req(&self, _: Request) -> BoxedFuture<'_, Result<Response, Self::Error>> {
-        Box::pin(async { Err(DummyHttpClient) })
+        Box::pin(async { Err(Self) })
     }
 }
 
 impl Client for twitch_oauth2::client::DummyClient {
-    type Error = twitch_oauth2::client::DummyClient;
+    type Error = Self;
 
     fn req(&self, _: Request) -> BoxedFuture<'_, Result<Response, Self::Error>> {
-        Box::pin(async { Err(twitch_oauth2::client::DummyClient) })
+        Box::pin(async { Err(Self) })
     }
 }
 
@@ -187,7 +187,7 @@ where C: Client
 impl ClientDefault<'static> for DummyHttpClient
 where Self: Default
 {
-    type Error = DummyHttpClient;
+    type Error = Self;
 
     fn default_client_with_name(_: Option<http::HeaderValue>) -> Result<Self, Self::Error> {
         Ok(Self)
@@ -230,33 +230,8 @@ impl<'c, C: Client + Sync + 'c> twitch_oauth2::client::Client for crate::HelixCl
     }
 }
 
-#[cfg(feature = "tmi")]
-#[allow(deprecated)]
-impl<'c, C: Client + Sync + 'c> twitch_oauth2::client::Client for crate::TmiClient<'c, C> {
-    type Error = CompatError<<C as Client>::Error>;
-
-    fn req(
-        &self,
-        request: http::Request<Vec<u8>>,
-    ) -> BoxedFuture<
-        '_,
-        Result<http::Response<Vec<u8>>, <Self as twitch_oauth2::client::Client>::Error>,
-    > {
-        let client = self.get_client();
-        {
-            let request = request.map(Bytes::from);
-            let resp = client.req(request);
-            Box::pin(async {
-                let resp = resp.await?;
-                let (parts, body) = resp.into_parts();
-                Ok(http::Response::from_parts(parts, body.to_vec()))
-            })
-        }
-    }
-}
-
-#[cfg(any(feature = "tmi", feature = "helix"))]
-impl<'c, C: Client + Sync> twitch_oauth2::client::Client for crate::TwitchClient<'c, C> {
+#[cfg(all(feature = "client", feature = "helix"))]
+impl<C: Client + Sync> twitch_oauth2::client::Client for crate::TwitchClient<'_, C> {
     type Error = CompatError<<C as Client>::Error>;
 
     fn req(

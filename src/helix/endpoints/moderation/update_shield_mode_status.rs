@@ -15,7 +15,8 @@
 //! );
 //! ```
 //!
-//! //! ## Body: [UpdateShieldModeStatusBody]
+//! ## Body: [UpdateShieldModeStatusBody]
+//!
 //! We also need to provide a body to the request.
 //!
 //! ```
@@ -103,9 +104,9 @@ pub struct UpdateShieldModeStatusBody<'a> {
 
 impl helix::private::SealedSerialize for UpdateShieldModeStatusBody<'_> {}
 
-impl<'a> UpdateShieldModeStatusBody<'a> {
+impl UpdateShieldModeStatusBody<'_> {
     /// Set status of shield mode
-    pub fn is_active(is_active: bool) -> Self {
+    pub const fn is_active(is_active: bool) -> Self {
         Self {
             is_active,
             _ph: std::marker::PhantomData,

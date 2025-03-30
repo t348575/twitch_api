@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 //! Holds serializable pubsub stuff
 //!
 //! Use [`listen_command()`] to send subscription listen and parse the responses with [`Response::parse`]
@@ -7,8 +8,8 @@
 //! This crate has some pubsub topics that are not documented by twitch. These may stop working at any time. To enable these, use feature
 //! <span
 //!   class="module-item stab portability"
-//!   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
-//! ><code>unsupported</code></span>
+//!   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"><code>unsupported</code>
+//! </span>
 //! to use them. Note that this crate doesn't try to keep changes to these pubsub topics semver compatible.
 
 static ERROR_TRYFROM: &str = "no match";
@@ -32,7 +33,6 @@ macro_rules! impl_de_ser {
         }
 
         impl ::std::fmt::Display for $type {
-            ///
             fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                 let s: String = ::std::convert::TryInto::try_into(self).map_err(|_| ::std::fmt::Error)?;
                 f.write_str(&s)
@@ -121,12 +121,6 @@ use crate::parse_json;
 /// also known as event
 pub trait Topic: serde::Serialize + Into<String> {
     /// Scopes needed by this topic
-    ///
-    /// This constant
-    /// <span
-    ///   class="module-item stab portability"
-    ///   style="display: inline; border-radius: 3px; padding: 2px; font-size: 80%; line-height: 1.2;"
-    /// ><code>unsupported</code></span>
     #[cfg(feature = "twitch_oauth2")]
     #[cfg_attr(nightly, doc(cfg(feature = "twitch_oauth2")))]
     const SCOPE: twitch_oauth2::Validator;
@@ -604,83 +598,76 @@ impl<'de> serde::Deserialize<'de> for TopicData {
             serde::de::Error::custom(format!("could not deserialize topic reply: {e}"))
         })?;
         Ok(match reply.topic {
-            #[cfg(feature = "pubsub")]
-            Topics::AutoModQueue(topic) => TopicData::AutoModQueue {
+            Topics::AutoModQueue(topic) => Self::AutoModQueue {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::CommunityPointsChannelV1(topic) => TopicData::CommunityPointsChannelV1 {
+            Topics::CommunityPointsChannelV1(topic) => Self::CommunityPointsChannelV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "pubsub")]
-            Topics::ChannelBitsEventsV2(topic) => TopicData::ChannelBitsEventsV2 {
+            Topics::ChannelBitsEventsV2(topic) => Self::ChannelBitsEventsV2 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "pubsub")]
-            Topics::ChannelBitsBadgeUnlocks(topic) => TopicData::ChannelBitsBadgeUnlocks {
-                topic,
-                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
-            },
-            #[cfg(feature = "unsupported")]
-            Topics::ChannelSubGiftsV1(topic) => TopicData::ChannelSubGiftsV1 {
+            Topics::ChannelBitsBadgeUnlocks(topic) => Self::ChannelBitsBadgeUnlocks {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::ChannelCheerEventsPublicV1(topic) => TopicData::ChannelCheerEventsPublicV1 {
-                topic,
-                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
-            },
-            #[cfg(feature = "pubsub")]
-            Topics::ChatModeratorActions(topic) => TopicData::ChatModeratorActions {
-                topic,
-                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
-            },
-            #[cfg(feature = "pubsub")]
-            Topics::ChannelPointsChannelV1(topic) => TopicData::ChannelPointsChannelV1 {
-                topic,
-                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
-            },
-            #[cfg(feature = "pubsub")]
-            Topics::ChannelSubscribeEventsV1(topic) => TopicData::ChannelSubscribeEventsV1 {
+            Topics::ChannelSubGiftsV1(topic) => Self::ChannelSubGiftsV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::VideoPlayback(topic) => TopicData::VideoPlayback {
+            Topics::ChannelCheerEventsPublicV1(topic) => Self::ChannelCheerEventsPublicV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(any(feature = "unsupported", feature = "tpm"))]
-            Topics::VideoPlaybackById(topic) => TopicData::VideoPlaybackById {
+            Topics::ChatModeratorActions(topic) => Self::ChatModeratorActions {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            Topics::ChannelPointsChannelV1(topic) => Self::ChannelPointsChannelV1 {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            Topics::ChannelSubscribeEventsV1(topic) => Self::ChannelSubscribeEventsV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::HypeTrainEventsV1(topic) => TopicData::HypeTrainEventsV1 {
+            Topics::VideoPlayback(topic) => Self::VideoPlayback {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::HypeTrainEventsV1Rewards(topic) => TopicData::HypeTrainEventsV1Rewards {
+            Topics::VideoPlaybackById(topic) => Self::VideoPlaybackById {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
             #[cfg(feature = "unsupported")]
-            Topics::Following(topic) => TopicData::Following {
+            Topics::HypeTrainEventsV1(topic) => Self::HypeTrainEventsV1 {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(any(feature = "unsupported", feature = "tpm"))]
-            Topics::Raid(topic) => TopicData::Raid {
+            #[cfg(feature = "unsupported")]
+            Topics::HypeTrainEventsV1Rewards(topic) => Self::HypeTrainEventsV1Rewards {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
-            #[cfg(feature = "pubsub")]
-            Topics::UserModerationNotifications(topic) => TopicData::UserModerationNotifications {
+            #[cfg(feature = "unsupported")]
+            Topics::Following(topic) => Self::Following {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            #[cfg(feature = "unsupported")]
+            Topics::Raid(topic) => Self::Raid {
+                topic,
+                reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
+            },
+            Topics::UserModerationNotifications(topic) => Self::UserModerationNotifications {
                 topic,
                 reply: parse_json(&reply.message, true).map_err(serde::de::Error::custom)?,
             },
@@ -774,7 +761,7 @@ pub enum Response {
 impl Response {
     // FIXME: Add example
     /// Parse string slice as a response.
-    pub fn parse(source: &str) -> Result<Response, crate::DeserError> { parse_json(source, true) }
+    pub fn parse(source: &str) -> Result<Self, crate::DeserError> { parse_json(source, true) }
 }
 
 /// Deserialize 'null' as <T as Default>::Default

@@ -1,6 +1,6 @@
 name: Audit
 env:
-  MSRV: 1.67.0
+  MSRV: 1.77.0
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -24,13 +24,16 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Install rust
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ env.MSRV }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
       - run: cargo audit
   cargo-deny:
     name: Cargo Deny
@@ -43,10 +46,10 @@ jobs:
           - licenses
           - sources
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@v1
+      - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           rust-version: ${{ env.MSRV }}
           command: check ${{ matrix.checks }} -s

@@ -1,4 +1,5 @@
 //! If available, pushes back the timestamp of the upcoming automatic mid-roll ad by 5 minutes.
+//!
 //! This endpoint duplicates the snooze functionality in the creator dashboard’s Ads Manager.
 //! [`snooze-next-ad`](https://dev.twitch.tv/docs/api/reference#snooze-next-ad)
 //!
@@ -92,7 +93,7 @@ impl Request for SnoozeNextAdRequest<'_> {
         twitch_oauth2::validator![twitch_oauth2::Scope::ChannelManageAds];
 }
 
-impl<'a> RequestPost for SnoozeNextAdRequest<'a> {
+impl RequestPost for SnoozeNextAdRequest<'_> {
     type Body = helix::EmptyBody;
 
     fn parse_inner_response(

@@ -1,6 +1,6 @@
 //! Requests for driving the API
 pub mod errors;
-use std::{convert::TryInto, str::FromStr};
+use std::{convert::TryInto, marker::PhantomData, str::FromStr};
 
 use crate::parse_json;
 
@@ -434,5 +434,78 @@ pub trait RequestGet: Request {
             response.total,
             response.other,
         ))
+    }
+}
+
+/// Parses a response where Helix responds with a single datum inside `data`.
+///
+/// An example response is `{ "data": [ { "foo": 1 } ]`.
+pub(crate) fn parse_single_return<T, E>(
+    request: Option<T>,
+    uri: &http::Uri,
+    response: &str,
+    status: http::StatusCode,
+) -> Result<Response<T, T::Response>, E>
+where
+    T: Request,
+    E: errors::HelixRequestDeserError,
+{
+    let resp = match status {
+        http::StatusCode::OK => {
+            let resp: InnerResponse<[T::Response; 1]> = parse_json(response, true)
+                .map_err(|e| E::deserialize_error(response.to_string(), e, uri.clone(), status))?;
+            let [s] = resp.data;
+            s
+        }
+        _ => {
+            return Err(E::invalid_response(
+                "unexpected status code",
+                response.to_string(),
+                status,
+                uri.clone(),
+            ));
+        }
+    };
+    Ok(Response::with_data(resp, request))
+}
+
+/// A helper type to parse responses that contain either zero or one element in an array
+pub(crate) struct ZeroOrOne<T>(pub Option<T>);
+
+impl<'de, T> serde::Deserialize<'de> for ZeroOrOne<T>
+where T: serde::Deserialize<'de>
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where D: serde::Deserializer<'de> {
+        struct ZeroOrOneVisitor<T> {
+            _marker: PhantomData<T>,
+        }
+
+        impl<'de, T> serde::de::Visitor<'de> for ZeroOrOneVisitor<T>
+        where T: serde::Deserialize<'de>
+        {
+            type Value = ZeroOrOne<T>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("an array of length zero or one")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where A: serde::de::SeqAccess<'de> {
+                match seq.next_element() {
+                    Ok(None) => Ok(ZeroOrOne(None)),
+                    Ok(Some(it)) => match seq.next_element::<T>() {
+                        Ok(None) => Ok(ZeroOrOne(Some(it))),
+                        Ok(Some(_)) => Err(serde::de::Error::invalid_length(2, &self)),
+                        Err(e) => Err(e),
+                    },
+                    Err(e) => Err(e),
+                }
+            }
+        }
+
+        deserializer.deserialize_seq(ZeroOrOneVisitor::<T> {
+            _marker: Default::default(),
+        })
     }
 }

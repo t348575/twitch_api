@@ -71,11 +71,11 @@ pub struct SubscriptionMessage {
     pub text: String,
     /// An array that includes the emote ID and start and end positions for where the emote appears in the text.
     #[serde(deserialize_with = "crate::deserialize_default_from_null")]
-    pub emotes: Vec<types::ResubscriptionEmote>,
+    pub emotes: Vec<types::EmoteOccurrence>,
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use super::*;
     #[test]
     fn parse_payload() {

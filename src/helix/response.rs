@@ -34,10 +34,10 @@ where
     /// ```rust
     /// use twitch_api::helix::{self, Request, RequestPost};
     ///
-    /// #[derive(serde::Serialize, Debug, PartialEq)]
+    /// #[derive(serde_derive::Serialize, Debug, PartialEq)]
     /// pub struct MyTwitchRequest {}
     ///
-    /// #[derive(serde::Deserialize, Debug, PartialEq)]
+    /// #[derive(serde_derive::Deserialize, Debug, PartialEq)]
     /// pub enum MyTwitchResponse {
     ///     Success,
     /// }
@@ -83,7 +83,7 @@ where
     ///     }
     /// }
     /// ```
-    pub fn new(
+    pub const fn new(
         data: D,
         pagination: Option<Cursor>,
         request: Option<R>,
@@ -106,10 +106,10 @@ where
     /// ```rust
     /// use twitch_api::helix::{self, Request, RequestPut};
     ///
-    /// #[derive(serde::Serialize, Debug, PartialEq)]
+    /// #[derive(serde_derive::Serialize, Debug, PartialEq)]
     /// pub struct MyTwitchRequest {}
     ///
-    /// #[derive(serde::Deserialize, Debug, PartialEq)]
+    /// #[derive(serde_derive::Deserialize, Debug, PartialEq)]
     /// pub enum MyTwitchResponse {
     ///     Success,
     /// }
@@ -152,7 +152,7 @@ where
     ///     }
     /// }
     /// ```
-    pub fn with_data(data: D, request: Option<R>) -> Self {
+    pub const fn with_data(data: D, request: Option<R>) -> Self {
         Self::new(data, None, request, None, None)
     }
 
@@ -211,8 +211,7 @@ where
         self,
         client: &'a super::HelixClient<'a, C>,
         token: &(impl super::TwitchToken + ?Sized),
-    ) -> Result<Option<Response<R, D>>, super::ClientRequestError<<C as crate::HttpClient>::Error>>
-    {
+    ) -> Result<Option<Self>, super::ClientRequestError<<C as crate::HttpClient>::Error>> {
         if let Some(mut req) = self.request.clone() {
             if self.pagination.is_some() {
                 req.set_pagination(self.pagination);

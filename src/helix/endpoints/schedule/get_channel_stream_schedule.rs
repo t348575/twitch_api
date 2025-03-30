@@ -1,9 +1,11 @@
 //! Gets all scheduled broadcasts or specific scheduled broadcasts from a channel’s stream schedule. Scheduled broadcasts are defined as “stream segments” in the API.
+//!
 //! [`get-channel-stream-schedule`](https://dev.twitch.tv/docs/api/reference#get-channel-stream-schedule)
 //!
 //! ## Notes
 //!
 //! See also [`get_channel_schedule`](helix::HelixClient::get_channel_schedule)
+//!
 //! ## Request: [GetChannelStreamScheduleRequest]
 //!
 //! To use this endpoint, construct a [`GetChannelStreamScheduleRequest`] with the [`GetChannelStreamScheduleRequest::broadcaster_id()`] method.
@@ -106,7 +108,7 @@ impl<'a> GetChannelStreamScheduleRequest<'a> {
     }
 
     /// Set amount of results returned per page.
-    pub fn first(mut self, first: usize) -> Self {
+    pub const fn first(mut self, first: usize) -> Self {
         self.first = Some(first);
         self
     }

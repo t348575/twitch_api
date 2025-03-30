@@ -58,7 +58,7 @@ pub struct CreateEventSubSubscriptionBody<E: EventSubscription> {
     pub transport: Transport,
 }
 
-impl<'a, E: EventSubscription> helix::HelixRequestBody for CreateEventSubSubscriptionBody<E> {
+impl<E: EventSubscription> helix::HelixRequestBody for CreateEventSubSubscriptionBody<E> {
     fn try_to_body(&self) -> Result<hyper::body::Bytes, helix::BodyError> {
         #[derive(PartialEq, Serialize, Debug)]
         struct IEventSubRequestBody<'a> {
@@ -81,7 +81,7 @@ impl<'a, E: EventSubscription> helix::HelixRequestBody for CreateEventSubSubscri
 // FIXME: Builder?
 impl<E: EventSubscription> CreateEventSubSubscriptionBody<E> {
     /// Create a new [`CreateEventSubSubscriptionBody`]
-    pub fn new(subscription: E, transport: Transport) -> Self {
+    pub const fn new(subscription: E, transport: Transport) -> Self {
         Self {
             subscription,
             transport,

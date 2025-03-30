@@ -1,4 +1,5 @@
 //! Gets a list of broadcasters that the specified user follows. You can also use this endpoint to see whether a user follows a specific broadcaster.
+//!
 //! [`get-followed-channels`](https://dev.twitch.tv/docs/api/reference#get-followed-channels)
 //!
 //! # Accessing the endpoint
@@ -89,7 +90,7 @@ impl<'a> GetFollowedChannels<'a> {
     /// use twitch_api::helix::channels::GetFollowedChannels;
     /// let request = GetFollowedChannels::user_id("1234").first(100);
     /// ```
-    pub fn first(mut self, first: usize) -> Self {
+    pub const fn first(mut self, first: usize) -> Self {
         self.first = Some(first);
         self
     }
@@ -127,7 +128,7 @@ pub struct FollowedBroadcaster {
     /// The broadcaster’s display name.
     pub broadcaster_name: types::DisplayName,
     /// The UTC timestamp when the user started following the broadcaster.
-    pub followed_at: types::UserId,
+    pub followed_at: types::Timestamp,
 }
 
 impl Request for GetFollowedChannels<'_> {

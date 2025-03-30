@@ -1,6 +1,10 @@
 //! Gets information about active streams belonging to channels that the authenticated user follows.
 //! [`get-followed-streams`](https://dev.twitch.tv/docs/api/reference#get-followed-streams)
 //!
+//! ## Notes
+//!
+//! See also [`HelixClient::get_followed_streams`](crate::helix::HelixClient::get_followed_streams).
+//!
 //! # Accessing the endpoint
 //!
 //! ## Request: [GetFollowedStreamsRequest]
@@ -78,7 +82,7 @@ impl<'a> GetFollowedStreamsRequest<'a> {
     }
 
     /// Set amount of results returned per page.
-    pub fn first(mut self, first: usize) -> Self {
+    pub const fn first(mut self, first: usize) -> Self {
         self.first = Some(first);
         self
     }

@@ -74,6 +74,143 @@
 //!     }
 //! }
 //! ```
+//!
+//! ## Implemented Subscriptions
+//!
+//! <!-- generate with "cargo xtask overview" (with a nightly toolchain) -->
+//! <!-- BEGIN-OVERVIEW -->
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">automod.*</code> 🟢 6/6</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`automod.message.hold`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodmessagehold) (v1) | [AutomodMessageHoldV1](automod::AutomodMessageHoldV1)<br>[AutomodMessageHoldV1Payload](automod::AutomodMessageHoldV1Payload) |
+//! | [`automod.message.hold`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodmessagehold-v2) (v2) | [AutomodMessageHoldV2](automod::AutomodMessageHoldV2)<br>[AutomodMessageHoldV2Payload](automod::AutomodMessageHoldV2Payload) |
+//! | [`automod.message.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodmessageupdate) (v1) | [AutomodMessageUpdateV1](automod::AutomodMessageUpdateV1)<br>[AutomodMessageUpdateV1Payload](automod::AutomodMessageUpdateV1Payload) |
+//! | [`automod.message.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodmessageupdate-v2) (v2) | [AutomodMessageUpdateV2](automod::AutomodMessageUpdateV2)<br>[AutomodMessageUpdateV2Payload](automod::AutomodMessageUpdateV2Payload) |
+//! | [`automod.settings.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodsettingsupdate) (v1) | [AutomodSettingsUpdateV1](automod::AutomodSettingsUpdateV1)<br>[AutomodSettingsUpdateV1Payload](automod::AutomodSettingsUpdateV1Payload) |
+//! | [`automod.terms.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#automodtermsupdate) (v1) | [AutomodTermsUpdateV1](automod::AutomodTermsUpdateV1)<br>[AutomodTermsUpdateV1Payload](automod::AutomodTermsUpdateV1Payload) |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">channel.*</code> 🟡 66/67</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`channel.ad_break.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelad_breakbegin) (v1) | [ChannelAdBreakBeginV1](channel::ChannelAdBreakBeginV1)<br>[ChannelAdBreakBeginV1Payload](channel::ChannelAdBreakBeginV1Payload) |
+//! | [`channel.ban`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelban) (v1) | [ChannelBanV1](channel::ChannelBanV1)<br>[ChannelBanV1Payload](channel::ChannelBanV1Payload) |
+//! | [`channel.bits.use`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelbitsuse) (v1) | [ChannelBitsUseV1](channel::ChannelBitsUseV1)<br>[ChannelBitsUseV1Payload](channel::ChannelBitsUseV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_automatic_reward_redemption.add`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_automatic_reward_redemptionadd) (v1) | [ChannelPointsAutomaticRewardRedemptionAddV1](channel::ChannelPointsAutomaticRewardRedemptionAddV1)<br>[ChannelPointsAutomaticRewardRedemptionAddV1Payload](channel::ChannelPointsAutomaticRewardRedemptionAddV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_automatic_reward_redemption.add`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_automatic_reward_redemptionadd-v2) (v2) | -<br>- |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_custom_reward.add`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_custom_rewardadd) (v1) | [ChannelPointsCustomRewardAddV1](channel::ChannelPointsCustomRewardAddV1)<br>[ChannelPointsCustomRewardAddV1Payload](channel::ChannelPointsCustomRewardAddV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_custom_reward.remove`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_custom_rewardremove) (v1) | [ChannelPointsCustomRewardRemoveV1](channel::ChannelPointsCustomRewardRemoveV1)<br>[ChannelPointsCustomRewardRemoveV1Payload](channel::ChannelPointsCustomRewardRemoveV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_custom_reward.update`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_custom_rewardupdate) (v1) | [ChannelPointsCustomRewardUpdateV1](channel::ChannelPointsCustomRewardUpdateV1)<br>[ChannelPointsCustomRewardUpdateV1Payload](channel::ChannelPointsCustomRewardUpdateV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_custom_reward_redemption.add`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_custom_reward_redemptionadd) (v1) | [ChannelPointsCustomRewardRedemptionAddV1](channel::ChannelPointsCustomRewardRedemptionAddV1)<br>[ChannelPointsCustomRewardRedemptionAddV1Payload](channel::ChannelPointsCustomRewardRedemptionAddV1Payload) |
+//! | [<span style="font-size: 0.9em">`channel.channel_points_custom_reward_redemption.update`</span>](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchannel_points_custom_reward_redemptionupdate) (v1) | [ChannelPointsCustomRewardRedemptionUpdateV1](channel::ChannelPointsCustomRewardRedemptionUpdateV1)<br>[ChannelPointsCustomRewardRedemptionUpdateV1Payload](channel::ChannelPointsCustomRewardRedemptionUpdateV1Payload) |
+//! | [`channel.charity_campaign.donate`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcharity_campaigndonate) (v1) | [ChannelCharityCampaignDonateV1](channel::ChannelCharityCampaignDonateV1)<br>[ChannelCharityCampaignDonateV1Payload](channel::ChannelCharityCampaignDonateV1Payload) |
+//! | [`channel.charity_campaign.progress`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcharity_campaignprogress) (v1) | [ChannelCharityCampaignProgressV1](channel::ChannelCharityCampaignProgressV1)<br>[ChannelCharityCampaignProgressV1Payload](channel::ChannelCharityCampaignProgressV1Payload) |
+//! | [`channel.charity_campaign.start`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcharity_campaignstart) (v1) | [ChannelCharityCampaignStartV1](channel::ChannelCharityCampaignStartV1)<br>[ChannelCharityCampaignStartV1Payload](channel::ChannelCharityCampaignStartV1Payload) |
+//! | [`channel.charity_campaign.stop`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcharity_campaignstop) (v1) | [ChannelCharityCampaignStopV1](channel::ChannelCharityCampaignStopV1)<br>[ChannelCharityCampaignStopV1Payload](channel::ChannelCharityCampaignStopV1Payload) |
+//! | [`channel.chat.clear`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatclear) (v1) | [ChannelChatClearV1](channel::ChannelChatClearV1)<br>[ChannelChatClearV1Payload](channel::ChannelChatClearV1Payload) |
+//! | [`channel.chat.clear_user_messages`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatclear_user_messages) (v1) | [ChannelChatClearUserMessagesV1](channel::ChannelChatClearUserMessagesV1)<br>[ChannelChatClearUserMessagesV1Payload](channel::ChannelChatClearUserMessagesV1Payload) |
+//! | [`channel.chat.message`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatmessage) (v1) | [ChannelChatMessageV1](channel::ChannelChatMessageV1)<br>[ChannelChatMessageV1Payload](channel::ChannelChatMessageV1Payload) |
+//! | [`channel.chat.message_delete`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatmessage_delete) (v1) | [ChannelChatMessageDeleteV1](channel::ChannelChatMessageDeleteV1)<br>[ChannelChatMessageDeleteV1Payload](channel::ChannelChatMessageDeleteV1Payload) |
+//! | [`channel.chat.notification`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatnotification) (v1) | [ChannelChatNotificationV1](channel::ChannelChatNotificationV1)<br>[ChannelChatNotificationV1Payload](channel::ChannelChatNotificationV1Payload) |
+//! | [`channel.chat.user_message_hold`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatuser_message_hold) (v1) | [ChannelChatUserMessageHoldV1](channel::ChannelChatUserMessageHoldV1)<br>[ChannelChatUserMessageHoldV1Payload](channel::ChannelChatUserMessageHoldV1Payload) |
+//! | [`channel.chat.user_message_update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchatuser_message_update) (v1) | [ChannelChatUserMessageUpdateV1](channel::ChannelChatUserMessageUpdateV1)<br>[ChannelChatUserMessageUpdateV1Payload](channel::ChannelChatUserMessageUpdateV1Payload) |
+//! | [`channel.chat_settings.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelchat_settingsupdate) (v1) | [ChannelChatSettingsUpdateV1](channel::ChannelChatSettingsUpdateV1)<br>[ChannelChatSettingsUpdateV1Payload](channel::ChannelChatSettingsUpdateV1Payload) |
+//! | [`channel.cheer`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelcheer) (v1) | [ChannelCheerV1](channel::ChannelCheerV1)<br>[ChannelCheerV1Payload](channel::ChannelCheerV1Payload) |
+//! | [`channel.follow`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelfollow) (v2) | [ChannelFollowV2](channel::ChannelFollowV2)<br>[ChannelFollowV2Payload](channel::ChannelFollowV2Payload) |
+//! | [`channel.goal.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelgoalbegin) (v1) | [ChannelGoalBeginV1](channel::ChannelGoalBeginV1)<br>[ChannelGoalBeginV1Payload](channel::ChannelGoalBeginV1Payload) |
+//! | [`channel.goal.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelgoalend) (v1) | [ChannelGoalEndV1](channel::ChannelGoalEndV1)<br>[ChannelGoalEndV1Payload](channel::ChannelGoalEndV1Payload) |
+//! | [`channel.goal.progress`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelgoalprogress) (v1) | [ChannelGoalProgressV1](channel::ChannelGoalProgressV1)<br>[ChannelGoalProgressV1Payload](channel::ChannelGoalProgressV1Payload) |
+//! | [`channel.guest_star_guest.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelguest_star_guestupdate) (beta) | [ChannelGuestStarGuestUpdateBeta](channel::ChannelGuestStarGuestUpdateBeta)<br>[ChannelGuestStarGuestUpdateBetaPayload](channel::ChannelGuestStarGuestUpdateBetaPayload) |
+//! | [`channel.guest_star_session.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelguest_star_sessionbegin) (beta) | [ChannelGuestStarSessionBeginBeta](channel::ChannelGuestStarSessionBeginBeta)<br>[ChannelGuestStarSessionBeginBetaPayload](channel::ChannelGuestStarSessionBeginBetaPayload) |
+//! | [`channel.guest_star_session.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelguest_star_sessionend) (beta) | [ChannelGuestStarSessionEndBeta](channel::ChannelGuestStarSessionEndBeta)<br>[ChannelGuestStarSessionEndBetaPayload](channel::ChannelGuestStarSessionEndBetaPayload) |
+//! | [`channel.guest_star_settings.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelguest_star_settingsupdate) (beta) | [ChannelGuestStarSettingsUpdateBeta](channel::ChannelGuestStarSettingsUpdateBeta)<br>[ChannelGuestStarSettingsUpdateBetaPayload](channel::ChannelGuestStarSettingsUpdateBetaPayload) |
+//! | [`channel.hype_train.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelhype_trainbegin) (v1) | [ChannelHypeTrainBeginV1](channel::ChannelHypeTrainBeginV1)<br>[ChannelHypeTrainBeginV1Payload](channel::ChannelHypeTrainBeginV1Payload) |
+//! | [`channel.hype_train.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelhype_trainend) (v1) | [ChannelHypeTrainEndV1](channel::ChannelHypeTrainEndV1)<br>[ChannelHypeTrainEndV1Payload](channel::ChannelHypeTrainEndV1Payload) |
+//! | [`channel.hype_train.progress`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelhype_trainprogress) (v1) | [ChannelHypeTrainProgressV1](channel::ChannelHypeTrainProgressV1)<br>[ChannelHypeTrainProgressV1Payload](channel::ChannelHypeTrainProgressV1Payload) |
+//! | [`channel.moderate`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelmoderate) (v1) | [ChannelModerateV1](channel::ChannelModerateV1)<br>[ChannelModerateV1Payload](channel::ChannelModerateV1Payload) |
+//! | [`channel.moderate`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelmoderate-v2) (v2) | [ChannelModerateV2](channel::ChannelModerateV2)<br>[ChannelModerateV2Payload](channel::ChannelModerateV2Payload) |
+//! | [`channel.moderator.add`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelmoderatoradd) (v1) | [ChannelModeratorAddV1](channel::ChannelModeratorAddV1)<br>[ChannelModeratorAddV1Payload](channel::ChannelModeratorAddV1Payload) |
+//! | [`channel.moderator.remove`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelmoderatorremove) (v1) | [ChannelModeratorRemoveV1](channel::ChannelModeratorRemoveV1)<br>[ChannelModeratorRemoveV1Payload](channel::ChannelModeratorRemoveV1Payload) |
+//! | [`channel.poll.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpollbegin) (v1) | [ChannelPollBeginV1](channel::ChannelPollBeginV1)<br>[ChannelPollBeginV1Payload](channel::ChannelPollBeginV1Payload) |
+//! | [`channel.poll.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpollend) (v1) | [ChannelPollEndV1](channel::ChannelPollEndV1)<br>[ChannelPollEndV1Payload](channel::ChannelPollEndV1Payload) |
+//! | [`channel.poll.progress`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpollprogress) (v1) | [ChannelPollProgressV1](channel::ChannelPollProgressV1)<br>[ChannelPollProgressV1Payload](channel::ChannelPollProgressV1Payload) |
+//! | [`channel.prediction.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpredictionbegin) (v1) | [ChannelPredictionBeginV1](channel::ChannelPredictionBeginV1)<br>[ChannelPredictionBeginV1Payload](channel::ChannelPredictionBeginV1Payload) |
+//! | [`channel.prediction.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpredictionend) (v1) | [ChannelPredictionEndV1](channel::ChannelPredictionEndV1)<br>[ChannelPredictionEndV1Payload](channel::ChannelPredictionEndV1Payload) |
+//! | [`channel.prediction.lock`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpredictionlock) (v1) | [ChannelPredictionLockV1](channel::ChannelPredictionLockV1)<br>[ChannelPredictionLockV1Payload](channel::ChannelPredictionLockV1Payload) |
+//! | [`channel.prediction.progress`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelpredictionprogress) (v1) | [ChannelPredictionProgressV1](channel::ChannelPredictionProgressV1)<br>[ChannelPredictionProgressV1Payload](channel::ChannelPredictionProgressV1Payload) |
+//! | [`channel.raid`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelraid) (v1) | [ChannelRaidV1](channel::ChannelRaidV1)<br>[ChannelRaidV1Payload](channel::ChannelRaidV1Payload) |
+//! | [`channel.shared_chat.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshared_chatbegin) (v1) | [ChannelSharedChatBeginV1](channel::ChannelSharedChatBeginV1)<br>[ChannelSharedChatBeginV1Payload](channel::ChannelSharedChatBeginV1Payload) |
+//! | [`channel.shared_chat.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshared_chatend) (v1) | [ChannelSharedChatEndV1](channel::ChannelSharedChatEndV1)<br>[ChannelSharedChatEndV1Payload](channel::ChannelSharedChatEndV1Payload) |
+//! | [`channel.shared_chat.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshared_chatupdate) (v1) | [ChannelSharedChatUpdateV1](channel::ChannelSharedChatUpdateV1)<br>[ChannelSharedChatUpdateV1Payload](channel::ChannelSharedChatUpdateV1Payload) |
+//! | [`channel.shield_mode.begin`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshield_modebegin) (v1) | [ChannelShieldModeBeginV1](channel::ChannelShieldModeBeginV1)<br>[ChannelShieldModeBeginV1Payload](channel::ChannelShieldModeBeginV1Payload) |
+//! | [`channel.shield_mode.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshield_modeend) (v1) | [ChannelShieldModeEndV1](channel::ChannelShieldModeEndV1)<br>[ChannelShieldModeEndV1Payload](channel::ChannelShieldModeEndV1Payload) |
+//! | [`channel.shoutout.create`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshoutoutcreate) (v1) | [ChannelShoutoutCreateV1](channel::ChannelShoutoutCreateV1)<br>[ChannelShoutoutCreateV1Payload](channel::ChannelShoutoutCreateV1Payload) |
+//! | [`channel.shoutout.receive`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelshoutoutreceive) (v1) | [ChannelShoutoutReceiveV1](channel::ChannelShoutoutReceiveV1)<br>[ChannelShoutoutReceiveV1Payload](channel::ChannelShoutoutReceiveV1Payload) |
+//! | [`channel.subscribe`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsubscribe) (v1) | [ChannelSubscribeV1](channel::ChannelSubscribeV1)<br>[ChannelSubscribeV1Payload](channel::ChannelSubscribeV1Payload) |
+//! | [`channel.subscription.end`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsubscriptionend) (v1) | [ChannelSubscriptionEndV1](channel::ChannelSubscriptionEndV1)<br>[ChannelSubscriptionEndV1Payload](channel::ChannelSubscriptionEndV1Payload) |
+//! | [`channel.subscription.gift`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsubscriptiongift) (v1) | [ChannelSubscriptionGiftV1](channel::ChannelSubscriptionGiftV1)<br>[ChannelSubscriptionGiftV1Payload](channel::ChannelSubscriptionGiftV1Payload) |
+//! | [`channel.subscription.message`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsubscriptionmessage) (v1) | [ChannelSubscriptionMessageV1](channel::ChannelSubscriptionMessageV1)<br>[ChannelSubscriptionMessageV1Payload](channel::ChannelSubscriptionMessageV1Payload) |
+//! | [`channel.suspicious_user.message`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsuspicious_usermessage) (v1) | [ChannelSuspiciousUserMessageV1](channel::ChannelSuspiciousUserMessageV1)<br>[ChannelSuspiciousUserMessageV1Payload](channel::ChannelSuspiciousUserMessageV1Payload) |
+//! | [`channel.suspicious_user.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelsuspicious_userupdate) (v1) | [ChannelSuspiciousUserUpdateV1](channel::ChannelSuspiciousUserUpdateV1)<br>[ChannelSuspiciousUserUpdateV1Payload](channel::ChannelSuspiciousUserUpdateV1Payload) |
+//! | [`channel.unban`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelunban) (v1) | [ChannelUnbanV1](channel::ChannelUnbanV1)<br>[ChannelUnbanV1Payload](channel::ChannelUnbanV1Payload) |
+//! | [`channel.unban_request.create`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelunban_requestcreate) (v1) | [ChannelUnbanRequestCreateV1](channel::ChannelUnbanRequestCreateV1)<br>[ChannelUnbanRequestCreateV1Payload](channel::ChannelUnbanRequestCreateV1Payload) |
+//! | [`channel.unban_request.resolve`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelunban_requestresolve) (v1) | [ChannelUnbanRequestResolveV1](channel::ChannelUnbanRequestResolveV1)<br>[ChannelUnbanRequestResolveV1Payload](channel::ChannelUnbanRequestResolveV1Payload) |
+//! | [`channel.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelupdate) (v2) | [ChannelUpdateV2](channel::ChannelUpdateV2)<br>[ChannelUpdateV2Payload](channel::ChannelUpdateV2Payload) |
+//! | [`channel.vip.add`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelvipadd) (v1) | [ChannelVipAddV1](channel::ChannelVipAddV1)<br>[ChannelVipAddV1Payload](channel::ChannelVipAddV1Payload) |
+//! | [`channel.vip.remove`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelvipremove) (v1) | [ChannelVipRemoveV1](channel::ChannelVipRemoveV1)<br>[ChannelVipRemoveV1Payload](channel::ChannelVipRemoveV1Payload) |
+//! | [`channel.warning.acknowledge`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelwarningacknowledge) (v1) | [ChannelWarningAcknowledgeV1](channel::ChannelWarningAcknowledgeV1)<br>[ChannelWarningAcknowledgeV1Payload](channel::ChannelWarningAcknowledgeV1Payload) |
+//! | [`channel.warning.send`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#channelwarningsend) (v1) | [ChannelWarningSendV1](channel::ChannelWarningSendV1)<br>[ChannelWarningSendV1Payload](channel::ChannelWarningSendV1Payload) |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">conduit.*</code> 🟢 1/1</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`conduit.shard.disabled`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#conduitsharddisabled) (v1) | [ConduitShardDisabledV1](conduit::ConduitShardDisabledV1)<br>[ConduitShardDisabledV1Payload](conduit::ConduitShardDisabledV1Payload) |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">drop.*</code> 🔴 0/1</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`drop.entitlement.grant`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#dropentitlementgrant) (v1) | -<br>- |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">extension.*</code> 🔴 0/1</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`extension.bits_transaction.create`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#extensionbits_transactioncreate) (v1) | -<br>- |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">stream.*</code> 🟢 2/2</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`stream.offline`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#streamoffline) (v1) | [StreamOfflineV1](stream::StreamOfflineV1)<br>[StreamOfflineV1Payload](stream::StreamOfflineV1Payload) |
+//! | [`stream.online`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#streamonline) (v1) | [StreamOnlineV1](stream::StreamOnlineV1)<br>[StreamOnlineV1Payload](stream::StreamOnlineV1Payload) |
+//!
+//! </details>
+//!
+//! <details><summary style="cursor: pointer"><code style="color: var(--link-color)">user.*</code> 🟢 4/4</summary>
+//!
+//! | Name | Subscription<br>Payload |
+//! |---|:---|
+//! | [`user.authorization.grant`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#userauthorizationgrant) (v1) | [UserAuthorizationGrantV1](user::UserAuthorizationGrantV1)<br>[UserAuthorizationGrantV1Payload](user::UserAuthorizationGrantV1Payload) |
+//! | [`user.authorization.revoke`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#userauthorizationrevoke) (v1) | [UserAuthorizationRevokeV1](user::UserAuthorizationRevokeV1)<br>[UserAuthorizationRevokeV1Payload](user::UserAuthorizationRevokeV1Payload) |
+//! | [`user.update`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#userupdate) (v1) | [UserUpdateV1](user::UserUpdateV1)<br>[UserUpdateV1Payload](user::UserUpdateV1Payload) |
+//! | [`user.whisper.message`](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types#userwhispermessage) (v1) | [UserWhisperMessageV1](user::UserWhisperMessageV1)<br>[UserWhisperMessageV1Payload](user::UserWhisperMessageV1Payload) |
+//!
+//! </details>
+//!
+//! <!-- END-OVERVIEW -->
 
 use std::borrow::Cow;
 
@@ -83,7 +220,9 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::parse_json;
 
+pub mod automod;
 pub mod channel;
+pub mod conduit;
 pub mod event;
 pub mod stream;
 pub mod user;
@@ -147,17 +286,19 @@ impl<E: EventSubscription + Clone> Message<E> {
     /// Returns `true` if the message is [`VerificationRequest`].
     ///
     /// [`VerificationRequest`]: Message::VerificationRequest
-    pub fn is_verification_request(&self) -> bool { matches!(self, Self::VerificationRequest(..)) }
+    pub const fn is_verification_request(&self) -> bool {
+        matches!(self, Self::VerificationRequest(..))
+    }
 
     /// Returns `true` if the message is [`Revocation`].
     ///
     /// [`Revocation`]: Message::Revocation
-    pub fn is_revocation(&self) -> bool { matches!(self, Self::Revocation(..)) }
+    pub const fn is_revocation(&self) -> bool { matches!(self, Self::Revocation(..)) }
 
     /// Returns `true` if the message is [`Notification`].
     ///
     /// [`Notification`]: Message::Notification
-    pub fn is_notification(&self) -> bool { matches!(self, Self::Notification(..)) }
+    pub const fn is_notification(&self) -> bool { matches!(self, Self::Notification(..)) }
 }
 
 impl<E: EventSubscription> Payload<E> {
@@ -202,7 +343,7 @@ impl<E: EventSubscription> Payload<E> {
     ///     Payload::parse_notification(notification)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn parse_notification(source: &str) -> Result<Payload<E>, PayloadParseError> {
+    pub fn parse_notification(source: &str) -> Result<Self, PayloadParseError> {
         #[derive(Deserialize)]
         #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
         struct Notification<E: EventSubscription> {
@@ -217,7 +358,7 @@ impl<E: EventSubscription> Payload<E> {
             event,
         } = parse_json::<Notification<E>>(source, true)?;
 
-        Ok(Payload {
+        Ok(Self {
             subscription,
             message: Message::Notification(event),
         })
@@ -253,7 +394,7 @@ impl<E: EventSubscription> Payload<E> {
     ///     Payload::parse_revocation(notification)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn parse_revocation(source: &str) -> Result<Payload<E>, PayloadParseError> {
+    pub fn parse_revocation(source: &str) -> Result<Self, PayloadParseError> {
         #[derive(Deserialize)]
         #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
         struct Notification<E: EventSubscription> {
@@ -263,7 +404,7 @@ impl<E: EventSubscription> Payload<E> {
 
         let Notification { subscription } = parse_json::<Notification<E>>(source, true)?;
 
-        Ok(Payload {
+        Ok(Self {
             subscription,
             message: Message::Revocation(),
         })
@@ -300,7 +441,7 @@ impl<E: EventSubscription> Payload<E> {
     ///     Payload::parse_verification_request(notification)?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn parse_verification_request(source: &str) -> Result<Payload<E>, PayloadParseError> {
+    pub fn parse_verification_request(source: &str) -> Result<Self, PayloadParseError> {
         #[derive(Deserialize)]
         #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
         struct Notification<E: EventSubscription> {
@@ -315,7 +456,7 @@ impl<E: EventSubscription> Payload<E> {
             challenge,
         } = parse_json::<Notification<E>>(source, true)?;
 
-        Ok(Payload {
+        Ok(Self {
             subscription,
             message: Message::VerificationRequest(VerificationRequest { challenge }),
         })
@@ -339,7 +480,7 @@ impl<E: EventSubscription> Payload<E> {
     /// Payload::<ChannelFollowV2>::parse_http(&converted_request)?
     /// # ; Ok(())}
     /// ```
-    pub fn parse_http<B>(request: &http::Request<B>) -> Result<Payload<E>, PayloadParseError>
+    pub fn parse_http<B>(request: &http::Request<B>) -> Result<Self, PayloadParseError>
     where B: AsRef<[u8]> {
         // FIXME: Add some debug assertions for version and type
 
@@ -358,21 +499,18 @@ impl<E: EventSubscription> Payload<E> {
     pub fn parse_request<'a>(
         ty: Cow<'a, [u8]>,
         source: Cow<'a, [u8]>,
-    ) -> Result<Payload<E>, PayloadParseError> {
+    ) -> Result<Self, PayloadParseError> {
         let source = std::str::from_utf8(&source)?;
         Self::parse_request_str(ty.as_ref(), source)
     }
 
     /// Parse a string slice as a [`Payload`] with a specific message type. You should not use this, instead, use [`Payload::parse_http`] or the specific `parse_*` functions
     #[doc(hidden)]
-    pub fn parse_request_str<'a>(
-        ty: &'a [u8],
-        source: &'a str,
-    ) -> Result<Payload<E>, PayloadParseError> {
+    pub fn parse_request_str<'a>(ty: &'a [u8], source: &'a str) -> Result<Self, PayloadParseError> {
         match ty {
-            b"notification" => Payload::parse_notification(source),
-            b"webhook_callback_verification" => Payload::parse_verification_request(source),
-            b"revocation" => Payload::parse_revocation(source),
+            b"notification" => Self::parse_notification(source),
+            b"webhook_callback_verification" => Self::parse_verification_request(source),
+            b"revocation" => Self::parse_revocation(source),
             typ => Err(PayloadParseError::UnknownMessageType(
                 String::from_utf8_lossy(typ).into_owned(),
             )),
@@ -418,10 +556,10 @@ pub struct Payload<E: EventSubscription + Clone> {
 
 impl<E: EventSubscription + Clone> Payload<E> {
     /// Convenience method for getting the event type from the payload.
-    pub fn get_event_type(&self) -> EventType { E::EVENT_TYPE }
+    pub const fn get_event_type(&self) -> EventType { E::EVENT_TYPE }
 
     /// Convenience method for getting the event version from the payload.
-    pub fn get_event_version(&self) -> &'static str { E::VERSION }
+    pub const fn get_event_version(&self) -> &'static str { E::VERSION }
 }
 
 /// Metadata about the subscription.
@@ -484,6 +622,17 @@ pub struct WebsocketTransport {
     pub session_id: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[non_exhaustive]
+/// Conduit transport
+pub struct ConduitTransport {
+    /// An ID that identifies the conduit to send notifications to.
+    ///
+    /// When you create a conduit, the server returns the conduit ID.
+    pub conduit_id: String,
+}
+
 /// Transport setting for event notification
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "method", rename_all = "lowercase")]
@@ -493,21 +642,30 @@ pub enum Transport {
     Webhook(WebhookTransport),
     /// Websocket transport
     Websocket(WebsocketTransport),
+    /// Conduit transport
+    Conduit(ConduitTransport),
 }
 
 impl Transport {
     /// Convenience method for making a webhook transport
-    pub fn webhook(callback: impl std::string::ToString, secret: String) -> Transport {
-        Transport::Webhook(WebhookTransport {
+    pub fn webhook(callback: impl std::string::ToString, secret: String) -> Self {
+        Self::Webhook(WebhookTransport {
             callback: callback.to_string(),
             secret,
         })
     }
 
     /// Convenience method for making a websocket transport
-    pub fn websocket(session_id: impl std::string::ToString) -> Transport {
-        Transport::Websocket(WebsocketTransport {
+    pub fn websocket(session_id: impl std::string::ToString) -> Self {
+        Self::Websocket(WebsocketTransport {
             session_id: session_id.to_string(),
+        })
+    }
+
+    /// Convenience method for making a conduit transport
+    pub fn conduit(conduit_id: impl std::string::ToString) -> Self {
+        Self::Conduit(ConduitTransport {
+            conduit_id: conduit_id.to_string(),
         })
     }
 
@@ -515,16 +673,22 @@ impl Transport {
     ///
     /// [`Webhook`]: Transport::Webhook
     #[must_use]
-    pub fn is_webhook(&self) -> bool { matches!(self, Self::Webhook(..)) }
+    pub const fn is_webhook(&self) -> bool { matches!(self, Self::Webhook(..)) }
 
     /// Returns `true` if the transport is [`Websocket`].
     ///
     /// [`Websocket`]: Transport::Websocket
     #[must_use]
-    pub fn is_websocket(&self) -> bool { matches!(self, Self::Websocket(..)) }
+    pub const fn is_websocket(&self) -> bool { matches!(self, Self::Websocket(..)) }
+
+    /// Returns `true` if the transport is [`Conduit`].
+    ///
+    /// [`Conduit`]: Transport::Conduit
+    #[must_use]
+    pub const fn is_conduit(&self) -> bool { matches!(self, Self::Conduit(..)) }
 
     /// Returns `Some(&WebhookTransport)` if this transport is a [webhook](WebhookTransport)
-    pub fn as_webhook(&self) -> Option<&WebhookTransport> {
+    pub const fn as_webhook(&self) -> Option<&WebhookTransport> {
         if let Self::Webhook(v) = self {
             Some(v)
         } else {
@@ -533,8 +697,17 @@ impl Transport {
     }
 
     /// Returns `Some(&WebsocketTransport)` if this transport is a [websocket](WebsocketTransport)
-    pub fn as_websocket(&self) -> Option<&WebsocketTransport> {
+    pub const fn as_websocket(&self) -> Option<&WebsocketTransport> {
         if let Self::Websocket(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+
+    /// Returns `Some(&ConduitTransport)` if this transport is a [conduit](ConduitTransport)
+    pub const fn as_conduit(&self) -> Option<&ConduitTransport> {
+        if let Self::Conduit(v) = self {
             Some(v)
         } else {
             None
@@ -553,6 +726,15 @@ impl Transport {
     /// Returns `Some(WebsocketTransport)` if this transport is a [websocket](WebsocketTransport), `Err(())` if not
     pub fn try_into_websocket(self) -> Option<WebsocketTransport> {
         if let Self::Websocket(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+
+    /// Returns `Some(ConduitTransport)` if this transport is a [conduit](ConduitTransport), `Err(())` if not
+    pub fn try_into_conduit(self) -> Option<ConduitTransport> {
+        if let Self::Conduit(v) = self {
             Some(v)
         } else {
             None
@@ -590,6 +772,15 @@ pub struct WebhookTransportResponse {
     pub callback: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+#[non_exhaustive]
+/// Conduit transport
+pub struct ConduitTransportResponse {
+    /// The conduit ID
+    pub conduit_id: String,
+}
+
 /// Transport response on event notification
 ///
 /// Does not include secret.
@@ -601,6 +792,8 @@ pub enum TransportResponse {
     Webhook(WebhookTransportResponse),
     /// Websocket transport response
     Websocket(WebsocketTransportResponse),
+    /// Conduit transport response
+    Conduit(ConduitTransportResponse),
 }
 
 impl TransportResponse {
@@ -608,16 +801,22 @@ impl TransportResponse {
     ///
     /// [`Webhook`]: TransportResponse::Webhook
     #[must_use]
-    pub fn is_webhook(&self) -> bool { matches!(self, Self::Webhook(..)) }
+    pub const fn is_webhook(&self) -> bool { matches!(self, Self::Webhook(..)) }
 
     /// Returns `true` if the transport response is [`Websocket`].
     ///
     /// [`Websocket`]: TransportResponse::Websocket
     #[must_use]
-    pub fn is_websocket(&self) -> bool { matches!(self, Self::Websocket(..)) }
+    pub const fn is_websocket(&self) -> bool { matches!(self, Self::Websocket(..)) }
+
+    /// Returns `true` if the transport response is [`Conduit`].
+    ///
+    /// [`Conduit`]: TransportResponse::Conduit
+    #[must_use]
+    pub const fn is_conduit(&self) -> bool { matches!(self, Self::Conduit(..)) }
 
     /// Returns `Some(&WebhookTransport)` if this transport response is a [webhook](WebhookTransportResponse)
-    pub fn as_webhook(&self) -> Option<&WebhookTransportResponse> {
+    pub const fn as_webhook(&self) -> Option<&WebhookTransportResponse> {
         if let Self::Webhook(v) = self {
             Some(v)
         } else {
@@ -626,8 +825,17 @@ impl TransportResponse {
     }
 
     /// Returns `Some(&WebsocketTransport)` if this transport response is a [websocket](WebsocketTransportResponse)
-    pub fn as_websocket(&self) -> Option<&WebsocketTransportResponse> {
+    pub const fn as_websocket(&self) -> Option<&WebsocketTransportResponse> {
         if let Self::Websocket(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+
+    /// Returns `Some(&ConduitTransport)` if this transport response is a [conduit](ConduitTransportResponse)
+    pub const fn as_conduit(&self) -> Option<&ConduitTransportResponse> {
+        if let Self::Conduit(v) = self {
             Some(v)
         } else {
             None
@@ -646,6 +854,15 @@ impl TransportResponse {
     /// Returns `Ok(WebsocketTransport)` if this transport response is a [websocket](WebsocketTransportResponse)
     pub fn try_into_websocket(self) -> Result<WebsocketTransportResponse, Self> {
         if let Self::Websocket(v) = self {
+            Ok(v)
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Returns `Ok(ConduitTransport)` if this transport response is a [conduit](ConduitTransportResponse)
+    pub fn try_into_conduit(self) -> Result<ConduitTransportResponse, Self> {
+        if let Self::Conduit(v) = self {
             Ok(v)
         } else {
             Err(self)
@@ -753,8 +970,114 @@ pub struct EventSubSubscription {
     pub version: String,
 }
 
+/// General information about a [Conduit](https://dev.twitch.tv/docs/eventsub/handling-conduit-events/)
+#[derive(PartialEq, Eq, Deserialize, Serialize, Debug, Clone)]
+#[non_exhaustive]
+#[cfg(feature = "eventsub")]
+#[cfg_attr(nightly, doc(cfg(feature = "eventsub")))]
+pub struct Conduit {
+    /// Conduit ID
+    pub id: types::ConduitId,
+    /// Number of shards associated with this conduit
+    pub shard_count: usize,
+}
+
+/// General information about a [Shard](https://dev.twitch.tv/docs/eventsub/handling-conduit-events/)
+///
+/// A shard is a Webhook or WebSocket connection, while a conduit is a collection of shards. The conduit transport type is for backend server applications and requires app access tokens.
+#[derive(PartialEq, Eq, Deserialize, Serialize, Debug, Clone)]
+#[non_exhaustive]
+#[cfg(feature = "eventsub")]
+#[cfg_attr(nightly, doc(cfg(feature = "eventsub")))]
+pub struct Shard {
+    /// Shard ID.
+    pub id: types::ConduitShardId,
+
+    /// The transport details that you want Twitch to use when sending you notifications.
+    pub transport: Transport,
+}
+
+impl Shard {
+    /// Create a shard with a transport set
+    pub fn new(id: impl Into<types::ConduitShardId>, transport: Transport) -> Self {
+        Self {
+            id: id.into(),
+
+            transport,
+        }
+    }
+}
+
+/// The shard status.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum ShardStatus {
+    /// The shard is enabled.
+    Enabled,
+
+    /// The shard is pending verification of the specified callback URL.
+    WebhookCallbackVerificationPending,
+
+    /// The specified callback URL failed verification.
+    WebhookCallbackVerificationFailed,
+
+    /// The notification delivery failure rate was too high.
+    NotificationFailuresExceeded,
+
+    /// The client closed the connection.
+    WebsocketDisconnected,
+
+    /// The client failed to respond to a ping message.
+    WebsocketFailedPingPong,
+
+    /// The client sent a non-pong message. Clients may only send pong messages (and only in response to a ping message).
+    WebsocketReceivedInboundTraffic,
+
+    /// The Twitch WebSocket server experienced an unexpected error.
+    WebsocketInternalError,
+
+    /// The Twitch WebSocket server timed out writing the message to the client.
+    WebsocketNetworkTimeout,
+
+    /// The Twitch WebSocket server experienced a network error writing the message to the client.
+    WebsocketNetworkError,
+
+    /// The client failed to reconnect to the Twitch WebSocket server within the required time after a Reconnect Message.
+    WebsocketFailedToReconnect,
+}
+
+/// A structured error that occurred with a shard
+#[derive(PartialEq, Eq, Deserialize, Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ShardError {
+    /// Shard ID.
+    pub id: types::ConduitShardId,
+
+    /// The error that occurred while updating the shard.
+    pub message: String,
+
+    /// Error codes used to represent a specific error condition while attempting to update shards.
+    pub code: String,
+}
+
+/// A shard when described by Twitch
+#[derive(PartialEq, Eq, Deserialize, Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct ShardResponse {
+    /// Shard ID.
+    pub id: types::ConduitShardId,
+
+    /// The shard status. The subscriber receives events only for enabled shards.
+    pub status: ShardStatus,
+
+    /// The transport details that you want Twitch to use when sending you notifications.
+    pub transport: TransportResponse,
+}
+
 pub(crate) trait NamedField {
     const NAME: &'static str;
+    const OPT_PREFIX: Option<&'static str> = None;
 }
 
 /// Deserialize {"field": field} as { field ...} and serialize in reverse
@@ -762,7 +1085,7 @@ mod enum_field_as_inner {
     use serde::ser::SerializeMap;
 
     use super::*;
-    pub(crate) fn deserialize<'de, D, S>(deserializer: D) -> Result<S, D::Error>
+    pub fn deserialize<'de, D, S>(deserializer: D) -> Result<S, D::Error>
     where
         D: serde::Deserializer<'de>,
         S: serde::Deserialize<'de> + NamedField, {
@@ -794,12 +1117,61 @@ mod enum_field_as_inner {
         deserializer.deserialize_any(Inner(std::marker::PhantomData))
     }
 
-    pub(crate) fn serialize<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where
         T: serde::Serialize + NamedField,
         S: serde::Serializer, {
         let mut map = serializer.serialize_map(Some(1))?;
         map.serialize_entry(T::NAME, value)?;
+        map.end()
+    }
+}
+
+/// Deserialize {"field": field} as { field ...} and serialize in reverse
+/// utilizes OPT_PREFIX for prefixing the field name
+mod enum_field_as_inner_prefixed {
+    use serde::ser::SerializeMap;
+
+    use super::*;
+    pub fn deserialize<'de, D, S>(deserializer: D) -> Result<S, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        S: serde::Deserialize<'de> + NamedField, {
+        struct Inner<S>(std::marker::PhantomData<S>);
+        impl<'de, S> serde::de::Visitor<'de> for Inner<S>
+        where S: serde::Deserialize<'de> + NamedField
+        {
+            type Value = S;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("any object")
+            }
+
+            fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+            where A: serde::de::MapAccess<'de> {
+                let mut map = map;
+                let mut value = None;
+                let name = S::OPT_PREFIX.unwrap().to_string() + S::NAME;
+                while let Some(key) = map.next_key::<String>()? {
+                    if key == name {
+                        value = Some(map.next_value()?);
+                    } else {
+                        map.next_value::<serde::de::IgnoredAny>()?;
+                    }
+                }
+                value.ok_or_else(|| serde::de::Error::missing_field(S::NAME))
+            }
+        }
+
+        deserializer.deserialize_any(Inner(std::marker::PhantomData))
+    }
+
+    pub fn serialize<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        T: serde::Serialize + NamedField,
+        S: serde::Serializer, {
+        let mut map = serializer.serialize_map(Some(1))?;
+        map.serialize_entry(&(T::OPT_PREFIX.unwrap().to_string() + T::NAME), value)?;
         map.end()
     }
 }

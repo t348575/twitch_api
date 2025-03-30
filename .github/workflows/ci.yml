@@ -1,7 +1,7 @@
 name: CI
 env:
   CI_TWITCH_API_FEATURES: "twitch_oauth2/all all unsupported deny_unknown_fields ureq"
-  MSRV: 1.67.0
+  MSRV: 1.77.0
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, rustfmt, clippy, docs]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0 # fetch tags for publish
@@ -43,7 +43,7 @@ jobs:
         rust: ["", nightly]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Install rust
@@ -57,7 +57,7 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@master
@@ -70,10 +70,9 @@ jobs:
     name: Prettier
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check formatting with Prettier
-        # Explicit commit, because this isn't tagged yet.
-        uses: actionsx/prettier@3d9f7c3fa44c9cb819e68292a328d7f4384be206
+        uses: actionsx/prettier@v3
         with:
           args: -c .
 
@@ -81,7 +80,7 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@master
@@ -92,7 +91,6 @@ jobs:
       - run: cargo clippy --locked --all-targets --no-default-features -p twitch_api
       - run: cargo clippy --locked --all-targets --no-default-features --features "helix" -p twitch_api
       - run: cargo clippy --locked --all-targets --no-default-features --features "helix client" -p twitch_api
-      - run: cargo clippy --locked --all-targets --no-default-features --features "tmi" -p twitch_api
       - run: cargo clippy --locked --all-targets --no-default-features --features "pubsub" -p twitch_api
       - run: cargo clippy --locked --all-targets --no-default-features --features "eventsub" -p twitch_api
       - run: cargo clippy --locked --all-targets --features "${{ env.CI_TWITCH_API_FEATURES }} trace_unknown_fields" -p twitch_api
@@ -102,13 +100,18 @@ jobs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
       - uses: Swatinem/rust-cache@v2
+
+      # Check if overviews are up-to-date
+      - name: Generate and check overviews
+        run: cargo xtask overview --check
+
       # We do the following to make sure docs.rs can document properly without anything broken, and that docs are working.
       - name: Run doc tests
         run: cargo test --doc --features "${{ env.CI_TWITCH_API_FEATURES }} _all"
