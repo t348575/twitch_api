@@ -29,9 +29,6 @@ exclude = ["twitch_types", "twitch_oauth2"]
 [workspace.dependencies]
 twitch_api = { version = "0.7.2", path = "." }
 twitch_oauth2 = { version = "0.15.1", path = "twitch_oauth2/" }
-twitch_types = { version = "0.4.8", features = [
-    "serde",
-], git = "https://github.com/t348575/twitch_types", branch = "utoipa"}
 ureq = { version = "2.10.1", default-features = false, features = [
     "tls",
 ]}
@@ -66,7 +63,7 @@ hyper = { version = "1.4.1", optional = true }
 http-body-util = { version = "0.1.1", optional = true }
 twitch_types = { version = "0.4.8", git = "https://github.com/t348575/twitch_types", branch = "utoipa"}
 tower-service = { version = "0.3.2", optional = true }
-utoipa = { version = "4", optional = true }
+utoipa = { version = "5", optional = true }
 
 [features]
 mock = []
@@ -74,7 +71,8 @@ tpm = [
     "serde_json",
     "twitch_types/stream",
     "twitch_types/timestamp",
-    "twitch_types/time"
+    "twitch_types/time",
+    "eventsub"
 ]
 default = ["deser_borrow", "dep:aliri_braid"]
 utoipa = ["twitch_types/utoipa", "dep:utoipa"]
