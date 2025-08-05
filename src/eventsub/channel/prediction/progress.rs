@@ -36,8 +36,8 @@ impl EventSubscription for ChannelPredictionProgressV1 {
 
 /// [`channel.prediction.progress`](ChannelPredictionProgressV1) response payload.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
-#[non_exhaustive]
 pub struct ChannelPredictionProgressV1Payload {
     /// The requested broadcaster ID.
     pub broadcaster_user_id: types::UserId,

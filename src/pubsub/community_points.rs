@@ -2,7 +2,7 @@
 //! PubSub messages for community points.
 //!
 //! See also [`pubsub::channel_points`]
-use crate::pubsub;
+use crate::{pubsub, types};
 use serde_derive::{Deserialize, Serialize};
 
 /// A user redeems an reward using channel points.
@@ -10,23 +10,142 @@ use serde_derive::{Deserialize, Serialize};
 /// Reply is [`pubsub::channel_points::ChannelPointsChannelV1Reply`]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(into = "String", try_from = "String")]
+#[cfg(feature = "unsupported")]
 pub struct CommunityPointsChannelV1 {
     /// The channel_id to watch. Can be fetched with the [Get Users](crate::helix::users::get_users) endpoint
     pub channel_id: u32,
 }
 
+#[cfg(feature = "unsupported")]
 impl_de_ser!(
     CommunityPointsChannelV1,
     "community-points-channel-v1",
     channel_id // FIXME: add trailing comma
 );
 
+#[cfg(feature = "unsupported")]
 impl pubsub::Topic for CommunityPointsChannelV1 {
     #[cfg(feature = "twitch_oauth2")]
     const SCOPE: twitch_oauth2::Validator = twitch_oauth2::validator![];
 
     fn into_topic(self) -> pubsub::Topics { super::Topics::CommunityPointsChannelV1(self) }
 }
+
+/// A user gets awarded with community points
+/// Reply is [`pubsub::channel_points::ChannelPointsUserV1Reply`]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(into = "String", try_from = "String")]
+pub struct CommunityPointsUserV1 {
+    /// The channel_id to watch. Can be fetched with the [Get Users](crate::helix::users::get_users) endpoint
+    pub channel_id: u32,
+}
+
+impl_de_ser!(
+    CommunityPointsUserV1,
+    "community-points-user-v1",
+    channel_id // FIXME: add trailing comma
+);
+
+impl pubsub::Topic for CommunityPointsUserV1 {
+    #[cfg(feature = "twitch_oauth2")]
+    const SCOPE: twitch_oauth2::Validator = twitch_oauth2::validator![];
+
+    fn into_topic(self) -> pubsub::Topics { super::Topics::CommunityPointsUserV1(self) }
+}
+
+/// Reply for [`CommunityPointsUserV1`]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "type", content = "data", rename_all = "kebab-case")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub enum CommunityPointsUserV1Reply {
+    /// Claiming of channel points
+    #[serde(alias = "claim-available")]
+    ClaimClaimed {
+        /// Event timestamp
+        timestamp: types::Timestamp,
+        /// Event data
+        claim: Claim,
+    },
+    /// Points earned
+    PointsEarned {
+        /// Event timestamp
+        timestamp: types::Timestamp,
+        /// The id of the channel
+        #[serde(rename = "channel_id")]
+        channel_id: types::UserId,
+        /// Points gained
+        #[serde(rename = "point_gain")]
+        point_gain: PointGain,
+        /// The current balance
+        balance: Balance,
+    },
+    /// Points spent
+    PointsSpent {
+        /// Event timestamp
+        timestamp: types::Timestamp,
+        /// The current balance
+        balance: Balance,
+    }
+}
+
+/// [`CommunityPointsUserV1Reply`] claim data
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub struct Claim {
+    /// The id of the redemption
+    pub id: String,
+    #[serde(rename = "user_id")]
+    /// The id of the user
+    pub user_id: types::UserId,
+    #[serde(rename = "channel_id")]
+    /// The id of the channel
+    pub channel_id: types::UserId,
+    #[serde(rename = "point_gain")]
+    /// The amount of points gained
+    pub point_gain: PointGain,
+    /// The timestamp when the redemption was created
+    #[serde(rename = "created_at")]
+    pub created_at: types::Timestamp,
+}
+
+/// [`CommunityPointsUserV1Reply`] balance
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub struct Balance {
+    /// The id of the user
+    #[serde(rename = "user_id")]
+    pub user_id: types::UserId,
+    /// The id of the channel
+    #[serde(rename = "channel_id")]
+    pub channel_id: types::UserId,
+    /// The amount of points
+    pub balance: i64,
+}
+
+/// Points gained
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "deny_unknown_fields", serde(deny_unknown_fields))]
+pub struct PointGain {
+    /// The id of the user
+    #[serde(rename = "user_id")]
+    pub user_id: types::UserId,
+    /// The id of the channel
+    #[serde(rename = "channel_id")]
+    pub channel_id: types::UserId,
+    /// The amount of points
+    #[serde(rename = "total_points")]
+    pub total_points: i64,
+    /// The amount of baseline points
+    #[serde(rename = "baseline_points")]
+    pub baseline_points: i64,
+    /// The reason for the points
+    #[serde(rename = "reason_code")]
+    pub reason_code: String
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::{Response, TopicData};
