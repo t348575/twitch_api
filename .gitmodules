@@ -1,3 +1,0 @@
-[submodule "twitch_oauth2"]
-	path = twitch_oauth2
-	url = https://github.com/t348575/twitch_oauth2
